@@ -1,16 +1,4 @@
 basePath: /
-definitions:
-  controller.album:
-    properties:
-      artistje:
-        type: string
-      id:
-        type: string
-      price:
-        type: number
-      title:
-        type: string
-    type: object
 host: localhost:8080
 info:
   contact:
@@ -25,45 +13,12 @@ info:
   title: Gin Swagger Example API
   version: "1.0"
 paths:
-  /albums:
+  /sizes:
     get:
       responses: {}
-      summary: Get all albums
+      summary: Get Sizes of the Board
       tags:
-      - albums
-    post:
-      consumes:
-      - application/json
-      description: add by json account
-      parameters:
-      - description: Add Album
-        in: body
-        name: album
-        required: true
-        schema:
-          $ref: '#/definitions/controller.album'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/controller.album'
-      summary: Post one album
-      tags:
-      - albums
-  /albums/{id}:
-    get:
-      parameters:
-      - description: Account ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      responses: {}
-      summary: GET ER EENTJE
-      tags:
-      - albums
+      - size
 schemes:
 - http
 swagger: "2.0"

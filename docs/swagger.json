@@ -21,82 +21,13 @@
     "host": "localhost:8080",
     "basePath": "/",
     "paths": {
-        "/albums": {
+        "/sizes": {
             "get": {
                 "tags": [
-                    "albums"
+                    "size"
                 ],
-                "summary": "Get all albums",
+                "summary": "Get Sizes of the Board",
                 "responses": {}
-            },
-            "post": {
-                "description": "add by json account",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "albums"
-                ],
-                "summary": "Post one album",
-                "parameters": [
-                    {
-                        "description": "Add Album",
-                        "name": "album",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/controller.album"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/controller.album"
-                        }
-                    }
-                }
-            }
-        },
-        "/albums/{id}": {
-            "get": {
-                "tags": [
-                    "albums"
-                ],
-                "summary": "GET ER EENTJE",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Account ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {}
-            }
-        }
-    },
-    "definitions": {
-        "controller.album": {
-            "type": "object",
-            "properties": {
-                "artistje": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "price": {
-                    "type": "number"
-                },
-                "title": {
-                    "type": "string"
-                }
             }
         }
     }
