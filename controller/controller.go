@@ -15,15 +15,20 @@ var albums = []album{
 	{ID: "3", Title: "Sarah Vaughan and Clifford Brown", Artist: "Sarah Vaughan", Price: 39.99},
 }
 
-// getAlbums responds with the list of all albums as JSON.
-
-// @Summary      GET ALBUMS
+// @Summary      Get all albums
+// @Tags         albums
 // @Router /albums [get]
 func getAlbums(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, albums)
 }
 
-// @Summary      POST ALBUMS
+// @Summary      Post one album
+// @Description  add by json account
+// @Tags         albums
+// @Accept       json
+// @Produce      json
+// @Param        album  body      album  true  "Add Album"
+// @Success      200      {object}  album
 // @Router /albums [post]
 func postAlbums(c *gin.Context) {
 	var newAlbum album
@@ -40,6 +45,7 @@ func postAlbums(c *gin.Context) {
 }
 
 // @Summary      GET ER EENTJE
+// @Tags         albums
 // @Param        id   path      int  true  "Account ID"
 // @Router /albums/{id} [get]
 func getAlbumByID(c *gin.Context) {

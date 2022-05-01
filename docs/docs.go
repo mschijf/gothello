@@ -27,16 +27,50 @@ const docTemplate = `{
     "paths": {
         "/albums": {
             "get": {
-                "summary": "GET ALBUMS",
+                "tags": [
+                    "albums"
+                ],
+                "summary": "Get all albums",
                 "responses": {}
             },
             "post": {
-                "summary": "POST ALBUMS",
-                "responses": {}
+                "description": "add by json account",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "albums"
+                ],
+                "summary": "Post one album",
+                "parameters": [
+                    {
+                        "description": "Add Album",
+                        "name": "album",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.album"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/controller.album"
+                        }
+                    }
+                }
             }
         },
         "/albums/{id}": {
             "get": {
+                "tags": [
+                    "albums"
+                ],
                 "summary": "GET ER EENTJE",
                 "parameters": [
                     {
@@ -48,6 +82,25 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {}
+            }
+        }
+    },
+    "definitions": {
+        "controller.album": {
+            "type": "object",
+            "properties": {
+                "artistje": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "number"
+                },
+                "title": {
+                    "type": "string"
+                }
             }
         }
     }
