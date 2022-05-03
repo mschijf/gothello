@@ -1,13 +1,13 @@
 package board
 
 import (
-	"gothello/bit"
+	"gothello/bit64math"
 )
 
 type BitBoard struct {
 	Board       [2]uint64
 	ColorToMove int
-	stack       []Move
+	Stack       []Move
 }
 
 var RightBorder uint64 = 0x01_01_01_01_01_01_01_01
@@ -100,7 +100,7 @@ func (bb *BitBoard) GenerateMoves() []Move {
 
 	for candAll != 0 {
 		var allCaptures uint64 = 0
-		var bbMove = bit.SmallesBit(candAll)
+		var bbMove = bit64math.SmallesBit(candAll)
 		if (bbMove & candWest) != 0 {
 			allCaptures |= getLeftCapture(WEST, bbOpponent, bbMove)
 		}
@@ -137,17 +137,34 @@ func (bb *BitBoard) GenerateMoves() []Move {
 	return moveList
 }
 
+func (bb *BitBoard) GetAllCandidateMoves() uint64 {
+	var bbToMove = bb.Board[bb.ColorToMove]
+	var bbOpponent = bb.Board[1-bb.ColorToMove]
+	var bbEmpty = ^(bbToMove | bbOpponent)
+	var bbWithoutLeftRightBorder = bbOpponent & VerticalMiddle
+
+	candWest := getLeftHittingCandidate(WEST, bbToMove, bbWithoutLeftRightBorder, bbEmpty)
+	candNorthEast := getLeftHittingCandidate(NORTHEAST, bbToMove, bbWithoutLeftRightBorder, bbEmpty)
+	candNorth := getLeftHittingCandidate(NORTH, bbToMove, bbOpponent, bbEmpty)
+	candNorthWest := getLeftHittingCandidate(NORTHWEST, bbToMove, bbWithoutLeftRightBorder, bbEmpty)
+	candEast := getRightHittingCandidate(EAST, bbToMove, bbWithoutLeftRightBorder, bbEmpty)
+	candSouthWest := getRightHittingCandidate(SOUTHWEST, bbToMove, bbWithoutLeftRightBorder, bbEmpty)
+	candSouth := getRightHittingCandidate(SOUTH, bbToMove, bbOpponent, bbEmpty)
+	candSouthEast := getRightHittingCandidate(SOUTHEAST, bbToMove, bbWithoutLeftRightBorder, bbEmpty)
+	return candWest | candNorthEast | candNorth | candNorthWest | candEast | candSouthWest | candSouth | candSouthEast
+}
+
 func (bb *BitBoard) DoMove(move *Move) {
 	bb.Board[bb.ColorToMove] ^= move.discsFlipped | move.discPlayed
 	bb.ColorToMove = 1 - bb.ColorToMove
 	bb.Board[bb.ColorToMove] ^= move.discsFlipped
-	bb.stack = append(bb.stack, *move)
+	bb.Stack = append(bb.Stack, *move)
 }
 
 func (bb *BitBoard) TakeBack() {
-	n := len(bb.stack) - 1 // Top element
-	move := bb.stack[n]
-	bb.stack = bb.stack[:n]
+	n := len(bb.Stack) - 1 // Top element
+	move := bb.Stack[n]
+	bb.Stack = bb.Stack[:n]
 
 	bb.Board[bb.ColorToMove] ^= move.discsFlipped
 	bb.ColorToMove = 1 - bb.ColorToMove
@@ -159,8 +176,8 @@ func (bb *BitBoard) IsEndOfGame() bool {
 		return true
 	}
 
-	n := len(bb.stack) - 1
-	return n > 1 && bb.stack[n].isPass() && bb.stack[n-1].isPass()
+	n := len(bb.Stack) - 1
+	return n > 1 && bb.Stack[n].isPass() && bb.Stack[n-1].isPass()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
