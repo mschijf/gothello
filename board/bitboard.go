@@ -7,7 +7,7 @@ import (
 type BitBoard struct {
 	Board       [2]uint64
 	ColorToMove int
-	Stack       []Move
+	Stack       MoveStack
 }
 
 var RightBorder uint64 = 0x01_01_01_01_01_01_01_01
@@ -26,7 +26,7 @@ const SOUTHEAST = 9 //9 shift to right
 const WHITE = 0
 const BLACK = 1
 
-func initBoard(bbWhite, bbBlack uint64, colorToMove int) BitBoard {
+func InitBoard(bbWhite, bbBlack uint64, colorToMove int) BitBoard {
 	var board = BitBoard{}
 	board.Board[WHITE] = bbWhite
 	board.Board[BLACK] = bbBlack
@@ -35,7 +35,7 @@ func initBoard(bbWhite, bbBlack uint64, colorToMove int) BitBoard {
 }
 
 func InitStartBoard() BitBoard {
-	return initBoard(0x00_00_00_10_08_00_00_00, 0x00_00_00_08_10_00_00_00, BLACK)
+	return InitBoard(0x00_00_00_10_08_00_00_00, 0x00_00_00_08_10_00_00_00, BLACK)
 }
 
 func getLeftHittingCandidate(direction int, bbToMove, bbCapturable, bbEmpty uint64) uint64 {
@@ -158,14 +158,11 @@ func (bb *BitBoard) DoMove(move *Move) {
 	bb.Board[bb.ColorToMove] ^= move.discsFlipped | move.discPlayed
 	bb.ColorToMove = 1 - bb.ColorToMove
 	bb.Board[bb.ColorToMove] ^= move.discsFlipped
-	bb.Stack = append(bb.Stack, *move)
+	bb.Stack.push(move)
 }
 
 func (bb *BitBoard) TakeBack() {
-	n := len(bb.Stack) - 1 // Top element
-	move := bb.Stack[n]
-	bb.Stack = bb.Stack[:n]
-
+	move := bb.Stack.pop()
 	bb.Board[bb.ColorToMove] ^= move.discsFlipped
 	bb.ColorToMove = 1 - bb.ColorToMove
 	bb.Board[bb.ColorToMove] ^= move.discsFlipped | move.discPlayed
@@ -176,8 +173,7 @@ func (bb *BitBoard) IsEndOfGame() bool {
 		return true
 	}
 
-	n := len(bb.Stack) - 1
-	return n > 1 && bb.Stack[n].isPass() && bb.Stack[n-1].isPass()
+	return bb.Stack.size() > 1 && bb.Stack.fromTop(0).isPass() && bb.Stack.fromTop(1).isPass()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

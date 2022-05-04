@@ -19,5 +19,7 @@ package main
 import "gothello/controller"
 
 func main() {
-	controller.TestController()
+	//var myBoard = board.InitStartBoard()
+	//fmt.Printf("hallo: %d\n", myBoard.Perft(11))
+	controller.RunController()
 }

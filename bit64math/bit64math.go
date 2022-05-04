@@ -1,4 +1,4 @@
-package bit
+package bit64math
 
 import "math/bits"
 
