@@ -4,28 +4,30 @@ import (
 	"gothello/board"
 )
 
-var currentBoard = board.InitStartBoard()
-
-func GetNewBoard() BoardModel {
-	currentBoard = board.InitStartBoard()
-	return BitBoardToBoardModel(&currentBoard)
+func GetNewBoard() (BoardModel, string) {
+	initialBoard := board.InitStartBoard()
+	return BitBoardToBoardModel(&initialBoard), initialBoard.ToBoardStatusString()
 }
 
-func GetBoard() BoardModel {
-	return BitBoardToBoardModel(&currentBoard)
+func GetBoard(boardStatusString string) (BoardModel, string) {
+	currentBoard := board.BoardStringToBitBoard(boardStatusString)
+	return BitBoardToBoardModel(&currentBoard), currentBoard.ToBoardStatusString()
 }
 
-func DoMove(col, row int) BoardModel {
+func DoMove(boardStatusString string, col, row int) (BoardModel, string) {
+	currentBoard := board.BoardStringToBitBoard(boardStatusString)
 	currentBoard.DoColRowMove(col, row)
-	return BitBoardToBoardModel(&currentBoard)
+	return BitBoardToBoardModel(&currentBoard), currentBoard.ToBoardStatusString()
 }
 
-func DoPassMove() BoardModel {
+func DoPassMove(boardStatusString string) (BoardModel, string) {
+	currentBoard := board.BoardStringToBitBoard(boardStatusString)
 	currentBoard.DoPassMove()
-	return BitBoardToBoardModel(&currentBoard)
+	return BitBoardToBoardModel(&currentBoard), currentBoard.ToBoardStatusString()
 }
 
-func TakeBackLastMove() BoardModel {
+func TakeBackLastMove(boardStatusString string) (BoardModel, string) {
+	currentBoard := board.BoardStringToBitBoard(boardStatusString)
 	currentBoard.TakeBack()
-	return BitBoardToBoardModel(&currentBoard)
+	return BitBoardToBoardModel(&currentBoard), currentBoard.ToBoardStatusString()
 }

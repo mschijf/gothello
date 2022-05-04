@@ -13,6 +13,7 @@ import (
 
 const ADDRESS = "localhost"
 const PORT = "8080"
+const BOARD_COOKIE = "OTHELLOSTATUS"
 
 var router *gin.Engine
 
@@ -26,26 +27,44 @@ func init() {
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 }
 
+func setBoardStringCookie(c *gin.Context, cookieValue string) {
+	c.SetCookie(BOARD_COOKIE, cookieValue, 3600*24*365, "/", ADDRESS, false, true)
+}
+
 func getNewBoard(c *gin.Context) {
-	c.IndentedJSON(http.StatusOK, service.GetNewBoard())
+	result, cookieValue := service.GetNewBoard()
+	setBoardStringCookie(c, cookieValue)
+	c.IndentedJSON(http.StatusOK, result)
 }
 
 func getBoard(c *gin.Context) {
-	c.IndentedJSON(http.StatusOK, service.GetBoard())
+	cookie, _ := c.Cookie(BOARD_COOKIE)
+	result, cookieValue := service.GetBoard(cookie)
+	setBoardStringCookie(c, cookieValue)
+	c.IndentedJSON(http.StatusOK, result)
 }
 
 func doMove(c *gin.Context) {
 	col, _ := strconv.Atoi(c.Param("column"))
 	row, _ := strconv.Atoi(c.Param("row"))
-	c.IndentedJSON(http.StatusOK, service.DoMove(col, row))
+	cookie, _ := c.Cookie(BOARD_COOKIE)
+	result, cookieValue := service.DoMove(cookie, col, row)
+	setBoardStringCookie(c, cookieValue)
+	c.IndentedJSON(http.StatusOK, result)
 }
 
 func doPassMove(c *gin.Context) {
-	c.IndentedJSON(http.StatusOK, service.DoPassMove())
+	cookie, _ := c.Cookie(BOARD_COOKIE)
+	result, cookieValue := service.DoPassMove(cookie)
+	setBoardStringCookie(c, cookieValue)
+	c.IndentedJSON(http.StatusOK, result)
 }
 
 func takeBackLastMove(c *gin.Context) {
-	c.IndentedJSON(http.StatusOK, service.TakeBackLastMove())
+	cookie, _ := c.Cookie(BOARD_COOKIE)
+	result, cookieValue := service.TakeBackLastMove(cookie)
+	setBoardStringCookie(c, cookieValue)
+	c.IndentedJSON(http.StatusOK, result)
 }
 
 // @Summary      Get Sizes of the Board

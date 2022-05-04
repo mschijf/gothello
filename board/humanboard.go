@@ -89,23 +89,24 @@ func (bb *BitBoard) ToBoardString() string {
 
 func (bb *BitBoard) ToBoardStatusString() string {
 	var movesPlayedString = ""
-
 	var tmpStack MoveStack
 	for !bb.Stack.isEmpty() {
-		move := bb.Stack.pop()
+		move := bb.Stack.fromTop(0)
+		tmpStack.push(move)
 		if move.isPass() {
-			movesPlayedString += "88"
+			movesPlayedString = "88" + movesPlayedString
 		} else {
 			col, row := bitToColRow(move.discPlayed)
 			movesPlayedString = fmt.Sprintf("%d%d", col, row) + movesPlayedString
 		}
-		tmpStack.push(move)
+		bb.TakeBack()
 	}
+
 	initialBoardString := bb.ToBoardString()
+
 	for !tmpStack.isEmpty() {
 		move := tmpStack.pop()
 		bb.DoMove(move)
-		bb.Stack.push(move)
 	}
 
 	return initialBoardString + DELIMITER + movesPlayedString
