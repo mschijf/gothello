@@ -13,22 +13,10 @@ import (
 
 const ADDRESS = "localhost"
 const PORT = "8080"
-const BOARD_COOKIE = "OTHELLOSTATUS"
-
-var router *gin.Engine
-
-func init() {
-	router = gin.Default()
-	err := router.SetTrustedProxies(nil)
-	if err != nil {
-		println("ERROR: setting trusted proxies not succeeding" + err.Error())
-		return
-	}
-	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-}
+const BOARDCOOKIE = "OTHELLOSTATUS"
 
 func setBoardStringCookie(c *gin.Context, cookieValue string) {
-	c.SetCookie(BOARD_COOKIE, cookieValue, 3600*24*365, "/", ADDRESS, false, true)
+	c.SetCookie(BOARDCOOKIE, cookieValue, 3600*24*365, "/", ADDRESS, false, true)
 }
 
 // @Router       /v1/api/board [post]
@@ -40,7 +28,7 @@ func getNewBoard(c *gin.Context) {
 
 // @Router       /v1/api/board [get]
 func getBoard(c *gin.Context) {
-	cookie, _ := c.Cookie(BOARD_COOKIE)
+	cookie, _ := c.Cookie(BOARDCOOKIE)
 	result, cookieValue := service.GetBoard(cookie)
 	setBoardStringCookie(c, cookieValue)
 	c.IndentedJSON(http.StatusOK, result)
@@ -50,7 +38,7 @@ func getBoard(c *gin.Context) {
 func doMove(c *gin.Context) {
 	col, _ := strconv.Atoi(c.Param("column"))
 	row, _ := strconv.Atoi(c.Param("row"))
-	cookie, _ := c.Cookie(BOARD_COOKIE)
+	cookie, _ := c.Cookie(BOARDCOOKIE)
 	result, cookieValue := service.DoMove(cookie, col, row)
 	setBoardStringCookie(c, cookieValue)
 	c.IndentedJSON(http.StatusOK, result)
@@ -58,7 +46,7 @@ func doMove(c *gin.Context) {
 
 // @Router       /v1/api/move/passmove [post]
 func doPassMove(c *gin.Context) {
-	cookie, _ := c.Cookie(BOARD_COOKIE)
+	cookie, _ := c.Cookie(BOARDCOOKIE)
 	result, cookieValue := service.DoPassMove(cookie)
 	setBoardStringCookie(c, cookieValue)
 	c.IndentedJSON(http.StatusOK, result)
@@ -66,7 +54,7 @@ func doPassMove(c *gin.Context) {
 
 // @Router       /v1/api/move/takeback/ [post]
 func takeBackLastMove(c *gin.Context) {
-	cookie, _ := c.Cookie(BOARD_COOKIE)
+	cookie, _ := c.Cookie(BOARDCOOKIE)
 	result, cookieValue := service.TakeBackLastMove(cookie)
 	setBoardStringCookie(c, cookieValue)
 	c.IndentedJSON(http.StatusOK, result)
@@ -81,7 +69,20 @@ func getHtml(c *gin.Context) {
 	c.Data(http.StatusOK, "text/html; charset=utf-8", html)
 }
 
-func RunController() {
+//----------------------------------------------------------------------------------------------------------------------
+
+func getRouter() *gin.Engine {
+	var router = gin.Default()
+	err := router.SetTrustedProxies(nil)
+	if err != nil {
+		panic(err)
+	}
+	return router
+}
+
+func setHandlers(router *gin.Engine) {
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
 	router.GET("/", getHtml)
 
 	router.GET("/api/v1/board", getBoard)
@@ -89,10 +90,17 @@ func RunController() {
 	router.POST("/api/v1/move/:column/:row/", doMove)
 	router.POST("/api/v1/move/passmove/", doPassMove)
 	router.POST("/api/v1/move/takeback/", takeBackLastMove)
+}
 
+func startRouter(router *gin.Engine) {
 	err := router.Run(ADDRESS + ":" + PORT)
 	if err != nil {
-		println("ERROR: running the router/handler not working")
-		return
+		panic(err)
 	}
+}
+
+func RunController() {
+	var router = getRouter()
+	setHandlers(router)
+	startRouter(router)
 }
