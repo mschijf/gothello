@@ -31,12 +31,14 @@ func setBoardStringCookie(c *gin.Context, cookieValue string) {
 	c.SetCookie(BOARD_COOKIE, cookieValue, 3600*24*365, "/", ADDRESS, false, true)
 }
 
+// @Router       /v1/api/board [post]
 func getNewBoard(c *gin.Context) {
 	result, cookieValue := service.GetNewBoard()
 	setBoardStringCookie(c, cookieValue)
 	c.IndentedJSON(http.StatusOK, result)
 }
 
+// @Router       /v1/api/board [get]
 func getBoard(c *gin.Context) {
 	cookie, _ := c.Cookie(BOARD_COOKIE)
 	result, cookieValue := service.GetBoard(cookie)
@@ -44,6 +46,7 @@ func getBoard(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, result)
 }
 
+// @Router       /v1/api/move/{column}/{row} [post]
 func doMove(c *gin.Context) {
 	col, _ := strconv.Atoi(c.Param("column"))
 	row, _ := strconv.Atoi(c.Param("row"))
@@ -53,6 +56,7 @@ func doMove(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, result)
 }
 
+// @Router       /v1/api/move/passmove [post]
 func doPassMove(c *gin.Context) {
 	cookie, _ := c.Cookie(BOARD_COOKIE)
 	result, cookieValue := service.DoPassMove(cookie)
@@ -60,6 +64,7 @@ func doPassMove(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, result)
 }
 
+// @Router       /v1/api/move/takeback/ [post]
 func takeBackLastMove(c *gin.Context) {
 	cookie, _ := c.Cookie(BOARD_COOKIE)
 	result, cookieValue := service.TakeBackLastMove(cookie)
@@ -67,26 +72,17 @@ func takeBackLastMove(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, result)
 }
 
-// @Summary      Get Sizes of the Board
-// @Tags         size
-// @Router       /sizes [get]
-func getSizes(c *gin.Context) {
-	sizeRecord := size{MaxRow: 8, MaxCol: 8}
-	c.IndentedJSON(http.StatusOK, sizeRecord)
-}
-
+// @Router       / [get]
 func getHtml(c *gin.Context) {
 	html, err := os.ReadFile("./view/othello.html")
 	if err != nil {
 		panic(err)
 	}
-	c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(string(html)))
+	c.Data(http.StatusOK, "text/html; charset=utf-8", html)
 }
 
 func RunController() {
 	router.GET("/", getHtml)
-
-	router.GET("/api/v1/sizes", getSizes)
 
 	router.GET("/api/v1/board", getBoard)
 	router.POST("/api/v1/board", getNewBoard)

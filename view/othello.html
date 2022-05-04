@@ -65,7 +65,7 @@
 
 <!--    flexcontainer-->
 
-<body onload="createBoard()">
+<body onload="getBoard()">
 <div class="grid-container">
     <div class="grid-item">
         <table class="tableborder" id="boardTable">
@@ -140,13 +140,16 @@
         return "field" + col + "" + row
     }
 
-    function createTableBoard(sizes) {
+    function createBoard(board) {
+        var boardAllreadyCreated = !!document.getElementById(toFieldId(0, 0));
+        if (boardAllreadyCreated)
+            return
         var table = document.getElementById("boardTable");
 
-        for (let row = 0; row < sizes.maxRow; row++) {
+        for (let row = 0; row < board.fields.length; row++) {
             var tableRow = table.insertRow(row);
             tableRow.className = "tableinner"
-            for (let col = 0; col < sizes.maxCol; col++) {
+            for (let col = 0; col < board.fields[row].length; col++) {
                 var cell = tableRow.insertCell(col);
                 cell.className = "tableinner"
 
@@ -161,7 +164,6 @@
                 outerDiv.appendChild(innerDiv)
             }
         }
-        getBoard()
     }
 
     function toColor(modelColor) {
@@ -192,6 +194,7 @@
     }
 
     function showBoard(board) {
+        createBoard(board)
         showFields(board)
 //                 showLastFieldPlayed(board)
         showWhoIsToMove(board)
@@ -345,19 +348,6 @@
                 var board = JSON.parse(this.responseText);
                 showBoard(board);
                 getComputeStatusInfo()
-            }
-        };
-        request.send();
-    }
-
-    function createBoard() {
-        var request = new XMLHttpRequest();
-
-        request.open("GET", "api/v1/sizes");
-        request.onreadystatechange = function() {
-            if(this.readyState === 4 && this.status === 200) {
-                var sizes = JSON.parse(this.responseText);
-                createTableBoard(sizes);
             }
         };
         request.send();

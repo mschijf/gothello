@@ -25,12 +25,31 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/sizes": {
+        "/": {
             "get": {
-                "tags": [
-                    "size"
-                ],
-                "summary": "Get Sizes of the Board",
+                "responses": {}
+            }
+        },
+        "/v1/api/board": {
+            "get": {
+                "responses": {}
+            },
+            "post": {
+                "responses": {}
+            }
+        },
+        "/v1/api/move/passmove": {
+            "post": {
+                "responses": {}
+            }
+        },
+        "/v1/api/move/takeback/": {
+            "post": {
+                "responses": {}
+            }
+        },
+        "/v1/api/move/{column}/{row}": {
+            "post": {
                 "responses": {}
             }
         }

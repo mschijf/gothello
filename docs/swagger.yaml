@@ -13,12 +13,23 @@ info:
   title: Gin Swagger Example API
   version: "1.0"
 paths:
-  /sizes:
+  /:
     get:
       responses: {}
-      summary: Get Sizes of the Board
-      tags:
-      - size
+  /v1/api/board:
+    get:
+      responses: {}
+    post:
+      responses: {}
+  /v1/api/move/{column}/{row}:
+    post:
+      responses: {}
+  /v1/api/move/passmove:
+    post:
+      responses: {}
+  /v1/api/move/takeback/:
+    post:
+      responses: {}
 schemes:
 - http
 swagger: "2.0"
