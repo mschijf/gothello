@@ -45,6 +45,9 @@ func bitToColRow(bit uint64) (int, int) {
 }
 
 func StringToBitBoard(boardString string) HumanBoard {
+	if boardString == "" {
+		return InitStartBoard()
+	}
 	var boardStringParts = strings.Split(boardString, ":")
 	bbWhite, _ := strconv.ParseUint(boardStringParts[0], 10, 64)
 	bbBlack, _ := strconv.ParseUint(boardStringParts[1], 10, 64)
@@ -152,4 +155,8 @@ func (hb *HumanBoard) ToBoardStatusString() string {
 
 func (hb *HumanBoard) TakeBack() {
 	hb.bitBoard.takeBack()
+}
+
+func (hb *HumanBoard) Perft(depth int) int64 {
+	return hb.bitBoard.perft(depth)
 }
