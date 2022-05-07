@@ -6,28 +6,28 @@ import (
 
 func GetNewBoard() (BoardModel, string) {
 	initialBoard := board.InitStartBoard()
-	return BitBoardToBoardModel(&initialBoard), initialBoard.ToBoardStatusString()
+	return ToBoardModel(&initialBoard), initialBoard.ToBoardStatusString()
 }
 
 func GetBoard(boardStatusString string) (BoardModel, string) {
-	currentBoard := board.BoardStringToBitBoard(boardStatusString)
-	return BitBoardToBoardModel(&currentBoard), currentBoard.ToBoardStatusString()
+	currentBoard := board.StringToBitBoard(boardStatusString)
+	return ToBoardModel(&currentBoard), currentBoard.ToBoardStatusString()
 }
 
 func DoMove(boardStatusString string, col, row int) (BoardModel, string) {
-	currentBoard := board.BoardStringToBitBoard(boardStatusString)
+	currentBoard := board.StringToBitBoard(boardStatusString)
 	currentBoard.DoColRowMove(col, row)
-	return BitBoardToBoardModel(&currentBoard), currentBoard.ToBoardStatusString()
+	return ToBoardModel(&currentBoard), currentBoard.ToBoardStatusString()
 }
 
 func DoPassMove(boardStatusString string) (BoardModel, string) {
-	currentBoard := board.BoardStringToBitBoard(boardStatusString)
+	currentBoard := board.StringToBitBoard(boardStatusString)
 	currentBoard.DoPassMove()
-	return BitBoardToBoardModel(&currentBoard), currentBoard.ToBoardStatusString()
+	return ToBoardModel(&currentBoard), currentBoard.ToBoardStatusString()
 }
 
 func TakeBackLastMove(boardStatusString string) (BoardModel, string) {
-	currentBoard := board.BoardStringToBitBoard(boardStatusString)
+	currentBoard := board.StringToBitBoard(boardStatusString)
 	currentBoard.TakeBack()
-	return BitBoardToBoardModel(&currentBoard), currentBoard.ToBoardStatusString()
+	return ToBoardModel(&currentBoard), currentBoard.ToBoardStatusString()
 }

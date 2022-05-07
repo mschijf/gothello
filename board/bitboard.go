@@ -4,38 +4,34 @@ import (
 	"gothello/bit64math"
 )
 
-type BitBoard struct {
-	Board       [2]uint64
-	ColorToMove int
-	Stack       MoveStack
+type tBitBoard struct {
+	bitFields   [2]uint64
+	colorToMove int
+	stack       MoveStack
 }
 
-var RightBorder uint64 = 0x01_01_01_01_01_01_01_01
-var LeftBorder uint64 = 0x80_80_80_80_80_80_80_80
-var VerticalMiddle = ^(LeftBorder | RightBorder)
+const rightBorder uint64 = 0x01_01_01_01_01_01_01_01
+const leftBorder uint64 = 0x80_80_80_80_80_80_80_80
+const verticalMiddle = ^(leftBorder | rightBorder)
 
-const WEST = 1      //1 shift to left
-const NORTHEAST = 7 //7 shift to left
-const NORTH = 8     //8 shift to left
-const NORTHWEST = 9 //9 shift to left
-const EAST = 1      //1 shift to right
-const SOUTHWEST = 7 //7 shift to right
-const SOUTH = 8     //8 shift to right
-const SOUTHEAST = 9 //9 shift to right
+const west = 1                  //1 shift to left
+const northEast = BoardSize - 1 //7 shift to left
+const north = BoardSize         //8 shift to left
+const northWest = BoardSize + 1 //9 shift to left
+const east = 1                  //1 shift to right
+const southWest = BoardSize - 1 //7 shift to right
+const south = BoardSize         //8 shift to right
+const southEast = BoardSize + 1 //9 shift to right
 
-const WHITE = 0
-const BLACK = 1
+const white = 0
+const black = 1
 
-func InitBoard(bbWhite, bbBlack uint64, colorToMove int) BitBoard {
-	var board = BitBoard{}
-	board.Board[WHITE] = bbWhite
-	board.Board[BLACK] = bbBlack
-	board.ColorToMove = colorToMove
+func initBoard(bbWhite, bbBlack uint64, colorToMove int) tBitBoard {
+	var board = tBitBoard{}
+	board.bitFields[white] = bbWhite
+	board.bitFields[black] = bbBlack
+	board.colorToMove = colorToMove
 	return board
-}
-
-func InitStartBoard() BitBoard {
-	return InitBoard(0x00_00_00_10_08_00_00_00, 0x00_00_00_08_10_00_00_00, BLACK)
 }
 
 func getLeftHittingCandidate(direction int, bbToMove, bbCapturable, bbEmpty uint64) uint64 {
@@ -80,100 +76,100 @@ func getRightCapture(direction int, bbOpponent, bbMove uint64) uint64 {
 	return allCaptures
 }
 
-func (bb *BitBoard) GenerateMoves() []Move {
-	var moveList []Move
+func (bb *tBitBoard) GenerateMoves() []tMove {
+	var moveList []tMove
 
-	var bbToMove = bb.Board[bb.ColorToMove]
-	var bbOpponent = bb.Board[1-bb.ColorToMove]
+	var bbToMove = bb.bitFields[bb.colorToMove]
+	var bbOpponent = bb.bitFields[1-bb.colorToMove]
 	var bbEmpty = ^(bbToMove | bbOpponent)
-	var bbWithoutLeftRightBorder = bbOpponent & VerticalMiddle
+	var bbWithoutLeftRightBorder = bbOpponent & verticalMiddle
 
-	candWest := getLeftHittingCandidate(WEST, bbToMove, bbWithoutLeftRightBorder, bbEmpty)
-	candNorthEast := getLeftHittingCandidate(NORTHEAST, bbToMove, bbWithoutLeftRightBorder, bbEmpty)
-	candNorth := getLeftHittingCandidate(NORTH, bbToMove, bbOpponent, bbEmpty)
-	candNorthWest := getLeftHittingCandidate(NORTHWEST, bbToMove, bbWithoutLeftRightBorder, bbEmpty)
-	candEast := getRightHittingCandidate(EAST, bbToMove, bbWithoutLeftRightBorder, bbEmpty)
-	candSouthWest := getRightHittingCandidate(SOUTHWEST, bbToMove, bbWithoutLeftRightBorder, bbEmpty)
-	candSouth := getRightHittingCandidate(SOUTH, bbToMove, bbOpponent, bbEmpty)
-	candSouthEast := getRightHittingCandidate(SOUTHEAST, bbToMove, bbWithoutLeftRightBorder, bbEmpty)
+	candWest := getLeftHittingCandidate(west, bbToMove, bbWithoutLeftRightBorder, bbEmpty)
+	candNorthEast := getLeftHittingCandidate(northEast, bbToMove, bbWithoutLeftRightBorder, bbEmpty)
+	candNorth := getLeftHittingCandidate(north, bbToMove, bbOpponent, bbEmpty)
+	candNorthWest := getLeftHittingCandidate(northWest, bbToMove, bbWithoutLeftRightBorder, bbEmpty)
+	candEast := getRightHittingCandidate(east, bbToMove, bbWithoutLeftRightBorder, bbEmpty)
+	candSouthWest := getRightHittingCandidate(southWest, bbToMove, bbWithoutLeftRightBorder, bbEmpty)
+	candSouth := getRightHittingCandidate(south, bbToMove, bbOpponent, bbEmpty)
+	candSouthEast := getRightHittingCandidate(southEast, bbToMove, bbWithoutLeftRightBorder, bbEmpty)
 	candAll := candWest | candNorthEast | candNorth | candNorthWest | candEast | candSouthWest | candSouth | candSouthEast
 
 	for candAll != 0 {
 		var allCaptures uint64 = 0
 		var bbMove = bit64math.SmallesBit(candAll)
 		if (bbMove & candWest) != 0 {
-			allCaptures |= getLeftCapture(WEST, bbOpponent, bbMove)
+			allCaptures |= getLeftCapture(west, bbOpponent, bbMove)
 		}
 		if (bbMove & candNorthEast) != 0 {
-			allCaptures |= getLeftCapture(NORTHEAST, bbOpponent, bbMove)
+			allCaptures |= getLeftCapture(northEast, bbOpponent, bbMove)
 		}
 		if (bbMove & candNorth) != 0 {
-			allCaptures |= getLeftCapture(NORTH, bbOpponent, bbMove)
+			allCaptures |= getLeftCapture(north, bbOpponent, bbMove)
 		}
 		if (bbMove & candNorthWest) != 0 {
-			allCaptures |= getLeftCapture(NORTHWEST, bbOpponent, bbMove)
+			allCaptures |= getLeftCapture(northWest, bbOpponent, bbMove)
 		}
 
 		if (bbMove & candEast) != 0 {
-			allCaptures |= getRightCapture(EAST, bbOpponent, bbMove)
+			allCaptures |= getRightCapture(east, bbOpponent, bbMove)
 		}
 		if (bbMove & candSouthWest) != 0 {
-			allCaptures |= getRightCapture(SOUTHWEST, bbOpponent, bbMove)
+			allCaptures |= getRightCapture(southWest, bbOpponent, bbMove)
 		}
 		if (bbMove & candSouth) != 0 {
-			allCaptures |= getRightCapture(SOUTH, bbOpponent, bbMove)
+			allCaptures |= getRightCapture(south, bbOpponent, bbMove)
 		}
 		if (bbMove & candSouthEast) != 0 {
-			allCaptures |= getRightCapture(SOUTHEAST, bbOpponent, bbMove)
+			allCaptures |= getRightCapture(southEast, bbOpponent, bbMove)
 		}
 
-		moveList = append(moveList, Move{allCaptures, bbMove})
+		moveList = append(moveList, tMove{allCaptures, bbMove})
 		candAll ^= bbMove
 	}
 	if len(moveList) == 0 {
-		return append(moveList, Move{0, 0})
+		return append(moveList, tMove{0, 0})
 	}
 
 	return moveList
 }
 
-func (bb *BitBoard) GetAllCandidateMoves() uint64 {
-	var bbToMove = bb.Board[bb.ColorToMove]
-	var bbOpponent = bb.Board[1-bb.ColorToMove]
+func (bb *tBitBoard) getAllCandidateMoves() uint64 {
+	var bbToMove = bb.bitFields[bb.colorToMove]
+	var bbOpponent = bb.bitFields[1-bb.colorToMove]
 	var bbEmpty = ^(bbToMove | bbOpponent)
-	var bbWithoutLeftRightBorder = bbOpponent & VerticalMiddle
+	var bbWithoutLeftRightBorder = bbOpponent & verticalMiddle
 
-	candWest := getLeftHittingCandidate(WEST, bbToMove, bbWithoutLeftRightBorder, bbEmpty)
-	candNorthEast := getLeftHittingCandidate(NORTHEAST, bbToMove, bbWithoutLeftRightBorder, bbEmpty)
-	candNorth := getLeftHittingCandidate(NORTH, bbToMove, bbOpponent, bbEmpty)
-	candNorthWest := getLeftHittingCandidate(NORTHWEST, bbToMove, bbWithoutLeftRightBorder, bbEmpty)
-	candEast := getRightHittingCandidate(EAST, bbToMove, bbWithoutLeftRightBorder, bbEmpty)
-	candSouthWest := getRightHittingCandidate(SOUTHWEST, bbToMove, bbWithoutLeftRightBorder, bbEmpty)
-	candSouth := getRightHittingCandidate(SOUTH, bbToMove, bbOpponent, bbEmpty)
-	candSouthEast := getRightHittingCandidate(SOUTHEAST, bbToMove, bbWithoutLeftRightBorder, bbEmpty)
+	candWest := getLeftHittingCandidate(west, bbToMove, bbWithoutLeftRightBorder, bbEmpty)
+	candNorthEast := getLeftHittingCandidate(northEast, bbToMove, bbWithoutLeftRightBorder, bbEmpty)
+	candNorth := getLeftHittingCandidate(north, bbToMove, bbOpponent, bbEmpty)
+	candNorthWest := getLeftHittingCandidate(northWest, bbToMove, bbWithoutLeftRightBorder, bbEmpty)
+	candEast := getRightHittingCandidate(east, bbToMove, bbWithoutLeftRightBorder, bbEmpty)
+	candSouthWest := getRightHittingCandidate(southWest, bbToMove, bbWithoutLeftRightBorder, bbEmpty)
+	candSouth := getRightHittingCandidate(south, bbToMove, bbOpponent, bbEmpty)
+	candSouthEast := getRightHittingCandidate(southEast, bbToMove, bbWithoutLeftRightBorder, bbEmpty)
 	return candWest | candNorthEast | candNorth | candNorthWest | candEast | candSouthWest | candSouth | candSouthEast
 }
 
-func (bb *BitBoard) DoMove(move *Move) {
-	bb.Board[bb.ColorToMove] ^= move.discsFlipped | move.discPlayed
-	bb.ColorToMove = 1 - bb.ColorToMove
-	bb.Board[bb.ColorToMove] ^= move.discsFlipped
-	bb.Stack.push(move)
+func (bb *tBitBoard) doMove(move *tMove) {
+	bb.bitFields[bb.colorToMove] ^= move.discsFlipped | move.discPlayed
+	bb.colorToMove = 1 - bb.colorToMove
+	bb.bitFields[bb.colorToMove] ^= move.discsFlipped
+	bb.stack.push(move)
 }
 
-func (bb *BitBoard) TakeBack() {
-	move := bb.Stack.pop()
-	bb.Board[bb.ColorToMove] ^= move.discsFlipped
-	bb.ColorToMove = 1 - bb.ColorToMove
-	bb.Board[bb.ColorToMove] ^= move.discsFlipped | move.discPlayed
+func (bb *tBitBoard) takeBack() {
+	move := bb.stack.pop()
+	bb.bitFields[bb.colorToMove] ^= move.discsFlipped
+	bb.colorToMove = 1 - bb.colorToMove
+	bb.bitFields[bb.colorToMove] ^= move.discsFlipped | move.discPlayed
 }
 
-func (bb *BitBoard) IsEndOfGame() bool {
-	if ^(bb.Board[WHITE] | bb.Board[BLACK]) == 0 {
+func (bb *tBitBoard) isEndOfGame() bool {
+	if ^(bb.bitFields[white] | bb.bitFields[black]) == 0 {
 		return true
 	}
 
-	return bb.Stack.size() > 1 && bb.Stack.fromTop(0).isPass() && bb.Stack.fromTop(1).isPass()
+	return bb.stack.size() > 1 && bb.stack.fromTop(0).isPass() && bb.stack.fromTop(1).isPass()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -199,19 +195,19 @@ func (bb *BitBoard) IsEndOfGame() bool {
 //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-func (bb *BitBoard) Perft(depth int) int64 {
+func (bb *tBitBoard) perft(depth int) int64 {
 	if depth == 0 {
 		return 1
 	}
-	if bb.IsEndOfGame() {
+	if bb.isEndOfGame() {
 		return 1
 	}
 	var nodeCount int64 = 0
 	moves := bb.GenerateMoves()
 	for _, move := range moves {
-		bb.DoMove(&move)
-		nodeCount += bb.Perft(depth - 1)
-		bb.TakeBack()
+		bb.doMove(&move)
+		nodeCount += bb.perft(depth - 1)
+		bb.takeBack()
 	}
 	return nodeCount
 }

@@ -2,9 +2,6 @@ package service
 
 import "gothello/board"
 
-const MAX_ROW = 8
-const MAX_COL = 8
-
 type FieldModel struct {
 	Col      int    `json:"col"`
 	Row      int    `json:"row"`
@@ -13,39 +10,39 @@ type FieldModel struct {
 }
 
 type BoardModel struct {
-	Fields           [MAX_ROW][MAX_COL]FieldModel `json:"fields"`
-	ColorToMove      string                       `json:"colorToMove"`
-	TakeBackPossible bool                         `json:"takeBackPossible"`
-	GameFinished     bool                         `json:"gameFinished"`
-	MustPass         bool                         `json:"mustPass"`
-	BoardString      string                       `json:"boardString"`
+	Fields           [board.BoardSize][board.BoardSize]FieldModel `json:"fields"`
+	ColorToMove      string                                       `json:"colorToMove"`
+	TakeBackPossible bool                                         `json:"takeBackPossible"`
+	GameFinished     bool                                         `json:"gameFinished"`
+	MustPass         bool                                         `json:"mustPass"`
+	BoardString      string                                       `json:"boardString"`
 }
 
-func BitBoardToBoardModel(bb *board.BitBoard) BoardModel {
+func ToBoardModel(humanBoard *board.HumanBoard) BoardModel {
 	var bm = BoardModel{}
-	for row := 0; row < MAX_ROW; row++ {
-		for col := 0; col < MAX_COL; col++ {
-			bm.Fields[row][col] = getFieldModel(bb, col, row)
+	for row := 0; row < board.BoardSize; row++ {
+		for col := 0; col < board.BoardSize; col++ {
+			bm.Fields[row][col] = getFieldModel(humanBoard, col, row)
 		}
 	}
-	if bb.IsBlackToMove() {
-		bm.ColorToMove = "BLACK"
+	if humanBoard.IsBlackToMove() {
+		bm.ColorToMove = "black"
 	} else {
-		bm.ColorToMove = "WHITE"
+		bm.ColorToMove = "white"
 	}
-	bm.TakeBackPossible = bb.HasHistory()
-	bm.GameFinished = bb.IsEndOfGame()
-	bm.MustPass = bb.MustPass() && !bb.IsEndOfGame()
-	bm.BoardString = bb.ToBoardString()
+	bm.TakeBackPossible = humanBoard.HasHistory()
+	bm.GameFinished = humanBoard.IsEndOfGame()
+	bm.MustPass = humanBoard.MustPass() && !humanBoard.IsEndOfGame()
+	bm.BoardString = humanBoard.ToBoardString()
 	return bm
 }
 
-func getFieldModel(bb *board.BitBoard, col, row int) FieldModel {
+func getFieldModel(bb *board.HumanBoard, col, row int) FieldModel {
 	var discColor string
 	if bb.IsBlackDisc(col, row) {
-		discColor = "BLACK"
+		discColor = "black"
 	} else if bb.IsWhiteDisc(col, row) {
-		discColor = "WHITE"
+		discColor = "white"
 	} else {
 		discColor = "NONE"
 	}

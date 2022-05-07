@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-//           BitBoard                               Human (0-based) Board
+//           tBitBoard                               Human (0-based) bitFields
 //
 //  --- --- --- --- --- --- --- ---    RIJ --- --- --- --- --- --- --- ---
 // |63 |62 |61 |60 |59 |58 |57 |56 |     0|   |   |   |   |   |   |   |   |
@@ -29,107 +29,127 @@ import (
 //  --- --- --- --- --- --- --- ---        --- --- --- --- --- --- --- ---
 //                                          0   1   2   3   4   5   6   7   KOLOM
 
-const DELIMITER = ":"
+type HumanBoard struct {
+	bitBoard tBitBoard
+}
+
+const delimiter = ":"
 
 func colRowToBit(col, row int) uint64 {
-	return 1 << ((7-row)*8 + (7 - col))
+	return 1 << ((BoardSize-1-row)*BoardSize + (BoardSize - 1 - col))
 }
 
 func bitToColRow(bit uint64) (int, int) {
 	mrb := bit64math.MostRightBitIndex(bit)
-	return 7 - (mrb % 8), 7 - (mrb / 8)
+	return (BoardSize - 1) - (mrb % BoardSize), (BoardSize - 1) - (mrb / BoardSize)
 }
 
-func (bb *BitBoard) IsBlackToMove() bool {
-	return bb.ColorToMove == BLACK
+func StringToBitBoard(boardString string) HumanBoard {
+	var boardStringParts = strings.Split(boardString, ":")
+	bbWhite, _ := strconv.ParseUint(boardStringParts[0], 10, 64)
+	bbBlack, _ := strconv.ParseUint(boardStringParts[1], 10, 64)
+	colorToMove, _ := strconv.Atoi(boardStringParts[2])
+	var humanBoard = HumanBoard{initBoard(bbWhite, bbBlack, colorToMove)}
+
+	if len(boardStringParts) == 4 {
+		var moveList = boardStringParts[3]
+		for i := 0; i < len(moveList); i += 2 {
+			if moveList[i] == 'x' && moveList[i+1] == 'x' {
+				humanBoard.DoPassMove()
+			} else {
+				var col = int(moveList[i] - '0')
+				var row = int(moveList[i+1] - '0')
+				humanBoard.DoColRowMove(col, row)
+			}
+		}
+	}
+	return humanBoard
 }
 
-func (bb *BitBoard) IsWhiteDisc(col, row int) bool {
-	return colRowToBit(col, row)&bb.Board[WHITE] != 0
+func InitStartBoard() HumanBoard {
+	var start = BoardSize / 2
+	var bbWhite = colRowToBit(start-1, start-1) | colRowToBit(start, start) //0x00_00_00_10_08_00_00_00
+	var bbBlack = colRowToBit(start-1, start) | colRowToBit(start, start-1) //0x00_00_00_08_10_00_00_00
+	var colorToMove = black
+	return HumanBoard{initBoard(bbWhite, bbBlack, colorToMove)}
 }
 
-func (bb *BitBoard) IsBlackDisc(col, row int) bool {
-	return colRowToBit(col, row)&bb.Board[BLACK] != 0
+func (hb *HumanBoard) IsBlackToMove() bool {
+	return hb.bitBoard.colorToMove == black
 }
 
-func (bb *BitBoard) IsPlayable(col, row int) bool {
-	return colRowToBit(col, row)&bb.GetAllCandidateMoves() != 0
+func (hb *HumanBoard) IsWhiteDisc(col, row int) bool {
+	return colRowToBit(col, row)&hb.bitBoard.bitFields[white] != 0
 }
 
-func (bb *BitBoard) MustPass() bool {
-	return bb.GetAllCandidateMoves() == 0
+func (hb *HumanBoard) IsBlackDisc(col, row int) bool {
+	return colRowToBit(col, row)&hb.bitBoard.bitFields[black] != 0
 }
 
-func (bb *BitBoard) HasHistory() bool {
-	return !bb.Stack.isEmpty()
+func (hb *HumanBoard) IsPlayable(col, row int) bool {
+	return colRowToBit(col, row)&hb.bitBoard.getAllCandidateMoves() != 0
 }
 
-func (bb *BitBoard) doBitBoardMove(moveBit uint64) error {
-	var moves = bb.GenerateMoves()
+func (hb *HumanBoard) MustPass() bool {
+	return hb.bitBoard.getAllCandidateMoves() == 0
+}
+
+func (hb *HumanBoard) HasHistory() bool {
+	return !hb.bitBoard.stack.isEmpty()
+}
+
+func (hb *HumanBoard) IsEndOfGame() bool {
+	return hb.bitBoard.isEndOfGame()
+}
+
+func (hb *HumanBoard) doBitBoardMove(moveBit uint64) error {
+	var moves = hb.bitBoard.GenerateMoves()
 	for _, move := range moves {
 		if move.discPlayed == moveBit {
-			bb.DoMove(&move)
+			hb.bitBoard.doMove(&move)
 			return nil
 		}
 	}
 	return errors.New("move from UI is not correct")
 }
 
-func (bb *BitBoard) DoColRowMove(col, row int) {
-	bb.doBitBoardMove(colRowToBit(col, row))
+func (hb *HumanBoard) DoColRowMove(col, row int) {
+	hb.doBitBoardMove(colRowToBit(col, row))
 }
 
-func (bb *BitBoard) DoPassMove() {
-	bb.doBitBoardMove(0)
+func (hb *HumanBoard) DoPassMove() {
+	hb.doBitBoardMove(0)
 }
 
-func (bb *BitBoard) ToBoardString() string {
-	return fmt.Sprintf("%d%s%d%s%d", bb.Board[0], DELIMITER, bb.Board[1], DELIMITER, bb.ColorToMove)
+func (hb *HumanBoard) ToBoardString() string {
+	return fmt.Sprintf("%d%s%d%s%d", hb.bitBoard.bitFields[0], delimiter, hb.bitBoard.bitFields[1], delimiter, hb.bitBoard.colorToMove)
 }
 
-func (bb *BitBoard) ToBoardStatusString() string {
+func (hb *HumanBoard) ToBoardStatusString() string {
 	var movesPlayedString = ""
 	var tmpStack MoveStack
-	for !bb.Stack.isEmpty() {
-		move := bb.Stack.fromTop(0)
+	for !hb.bitBoard.stack.isEmpty() {
+		move := hb.bitBoard.stack.fromTop(0)
 		tmpStack.push(move)
 		if move.isPass() {
-			movesPlayedString = "88" + movesPlayedString
+			movesPlayedString = "xx" + movesPlayedString
 		} else {
 			col, row := bitToColRow(move.discPlayed)
 			movesPlayedString = fmt.Sprintf("%d%d", col, row) + movesPlayedString
 		}
-		bb.TakeBack()
+		hb.bitBoard.takeBack()
 	}
 
-	initialBoardString := bb.ToBoardString()
+	initialBoardString := hb.ToBoardString()
 
 	for !tmpStack.isEmpty() {
 		move := tmpStack.pop()
-		bb.DoMove(move)
+		hb.bitBoard.doMove(move)
 	}
 
-	return initialBoardString + DELIMITER + movesPlayedString
+	return initialBoardString + delimiter + movesPlayedString
 }
 
-func BoardStringToBitBoard(boardString string) BitBoard {
-	var boardStringParts = strings.Split(boardString, ":")
-	bbWhite, _ := strconv.ParseUint(boardStringParts[0], 10, 64)
-	bbBlack, _ := strconv.ParseUint(boardStringParts[1], 10, 64)
-	colorToMove, _ := strconv.Atoi(boardStringParts[2])
-	var bitBoard = InitBoard(bbWhite, bbBlack, colorToMove)
-
-	if len(boardStringParts) == 4 {
-		var moveList = boardStringParts[3]
-		for i := 0; i < len(moveList); i += 2 {
-			var col = int(moveList[i] - '0')
-			var row = int(moveList[i+1] - '0')
-			if col == 8 && row == 8 {
-				bitBoard.DoPassMove()
-			} else {
-				bitBoard.DoColRowMove(col, row)
-			}
-		}
-	}
-	return bitBoard
+func (hb *HumanBoard) TakeBack() {
+	hb.bitBoard.takeBack()
 }
