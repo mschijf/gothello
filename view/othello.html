@@ -60,6 +60,9 @@
         .tableleft {
             text-align: left;
         }
+        .tableright {
+            text-align: right;
+        }
     </style>
 </head>
 
@@ -84,13 +87,13 @@
                 <td></td>
                 <td></td>
                 <td></td>
-                <td colspan="4"><input type="checkbox" checked id="showCandidateMoves" onclick="getBoard()" name="showCandidateMoves" value="showCandidateMoves"><label for="showCandidateMoves">Show Candidate Moves</label></td>
+                <td class="tableleft" colspan="4"><input type="checkbox" checked id="showCandidateMoves" onclick="getBoard()" name="showCandidateMoves" value="showCandidateMoves"><label for="showCandidateMoves">Show Candidate Moves</label></td>
             </tr>
             <tr>
                 <td>Aan zet</td>
                 <td>Winnaar</td>
                 <td></td>
-                <td colspan="4"><input type="checkbox" id="useComputerPlayer" name="useComp" value="useComp"><label for="useComp"> Play vs Computer</label></td>
+                <td class="tableleft"  colspan="4"><input type="checkbox" id="useComputerPlayer" name="useComp" value="useComp"><label for="useComputerPlayer"> Play vs Computer</label></td>
             </tr>
             <tr>
                 <td><div class="buttonsquare"><div id="whoistomove" class="smalldot"></div></div></td>
@@ -104,8 +107,14 @@
         </table>
         <table class="table2">
             <tr>
-                <td class="tableleft"><b>board id:</b></td>
-                <td class="tableleft" id="boardId"></td>
+                <td class="tableleft"><b>White</b></td>
+                <td class="tableleft"><b>Black</b></td>
+                <td class="tableright"><b>board id</b></td>
+            </tr>
+            <tr>
+                <td class="tableleft" id="whiteCount"></td>
+                <td class="tableleft" id="blackCount"></td>
+                <td class="tableright" id="boardId"></td>
             </tr>
         </table>
     </div>
@@ -222,6 +231,8 @@
 
     function showMiscellanious(board) {
         document.getElementById("boardId").innerText = board.boardString;
+        document.getElementById("whiteCount").innerText = board.whiteCount
+        document.getElementById("blackCount").innerText = board.blackCount
     }
 
     function showLastFieldPlayed(board) {

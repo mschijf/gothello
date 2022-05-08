@@ -1,7 +1,6 @@
 package board
 
 import (
-	"errors"
 	"fmt"
 	"gothello/bit64math"
 	"gothello/collection"
@@ -9,7 +8,7 @@ import (
 	"strings"
 )
 
-//           tBitBoard                               Human (0-based) bitFields
+//           bitBoard                               Human (0-based) bitFields
 //
 //  --- --- --- --- --- --- --- ---    RIJ --- --- --- --- --- --- --- ---
 // |63 |62 |61 |60 |59 |58 |57 |56 |     0|   |   |   |   |   |   |   |   |
@@ -31,7 +30,7 @@ import (
 //                                          0   1   2   3   4   5   6   7   KOLOM
 
 type HumanBoard struct {
-	bitBoard tBitBoard
+	bitBoard bitBoard
 }
 
 const delimiter = ":"
@@ -106,15 +105,15 @@ func (hb *HumanBoard) IsEndOfGame() bool {
 	return hb.bitBoard.isEndOfGame()
 }
 
-func (hb *HumanBoard) doBitBoardMove(moveBit uint64) error {
-	var moves = hb.bitBoard.GenerateMoves()
+func (hb *HumanBoard) doBitBoardMove(moveBit uint64) {
+	var moves = hb.bitBoard.generateMoves()
 	for _, move := range moves {
 		if move.discPlayed == moveBit {
 			hb.bitBoard.doMove(&move)
-			return nil
+			return
 		}
 	}
-	return errors.New("move from UI is not correct")
+	panic("move from UI is not correct")
 }
 
 func (hb *HumanBoard) DoColRowMove(col, row int) {
@@ -125,13 +124,21 @@ func (hb *HumanBoard) DoPassMove() {
 	hb.doBitBoardMove(0)
 }
 
+func (hb *HumanBoard) TakeBack() {
+	hb.bitBoard.takeBack()
+}
+
+func (hb *HumanBoard) CountDiscs() (whiteCount, blackCount int) {
+	return bit64math.BitCount(hb.bitBoard.bitFields[white]), bit64math.BitCount(hb.bitBoard.bitFields[black])
+}
+
 func (hb *HumanBoard) ToBoardString() string {
 	return fmt.Sprintf("%d%s%d%s%d", hb.bitBoard.bitFields[0], delimiter, hb.bitBoard.bitFields[1], delimiter, hb.bitBoard.colorToMove)
 }
 
 func (hb *HumanBoard) ToBoardStatusString() string {
 	var movesPlayedString = ""
-	var tmpStack collection.Stack[tMove]
+	var tmpStack collection.Stack[move]
 	for !hb.bitBoard.stack.IsEmpty() {
 		move := hb.bitBoard.stack.FromTop(0)
 		tmpStack.Push(move)
@@ -152,12 +159,4 @@ func (hb *HumanBoard) ToBoardStatusString() string {
 	}
 
 	return initialBoardString + delimiter + movesPlayedString
-}
-
-func (hb *HumanBoard) TakeBack() {
-	hb.bitBoard.takeBack()
-}
-
-func (hb *HumanBoard) Perft(depth int) int64 {
-	return hb.bitBoard.perft(depth)
 }

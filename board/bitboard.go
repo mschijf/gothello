@@ -5,10 +5,10 @@ import (
 	"gothello/collection"
 )
 
-type tBitBoard struct {
+type bitBoard struct {
 	bitFields   [2]uint64
 	colorToMove int
-	stack       collection.Stack[tMove]
+	stack       collection.Stack[move]
 }
 
 const rightBorder uint64 = 0x01_01_01_01_01_01_01_01
@@ -27,8 +27,8 @@ const southEast = BoardSize + 1 //9 shift to right
 const white = 0
 const black = 1
 
-func initBoard(bbWhite, bbBlack uint64, colorToMove int) tBitBoard {
-	var board = tBitBoard{}
+func initBoard(bbWhite, bbBlack uint64, colorToMove int) bitBoard {
+	var board = bitBoard{}
 	board.bitFields[white] = bbWhite
 	board.bitFields[black] = bbBlack
 	board.colorToMove = colorToMove
@@ -77,8 +77,8 @@ func getRightCapture(direction int, bbOpponent, bbMove uint64) uint64 {
 	return allCaptures
 }
 
-func (bb *tBitBoard) GenerateMoves() []tMove {
-	var moveList []tMove
+func (bb *bitBoard) generateMoves() []move {
+	var moveList []move
 
 	var bbToMove = bb.bitFields[bb.colorToMove]
 	var bbOpponent = bb.bitFields[1-bb.colorToMove]
@@ -124,17 +124,17 @@ func (bb *tBitBoard) GenerateMoves() []tMove {
 			allCaptures |= getRightCapture(southEast, bbOpponent, bbMove)
 		}
 
-		moveList = append(moveList, tMove{allCaptures, bbMove})
+		moveList = append(moveList, move{allCaptures, bbMove})
 		candAll ^= bbMove
 	}
 	if len(moveList) == 0 {
-		return append(moveList, tMove{0, 0})
+		return append(moveList, move{0, 0})
 	}
 
 	return moveList
 }
 
-func (bb *tBitBoard) getAllCandidateMoves() uint64 {
+func (bb *bitBoard) getAllCandidateMoves() uint64 {
 	var bbToMove = bb.bitFields[bb.colorToMove]
 	var bbOpponent = bb.bitFields[1-bb.colorToMove]
 	var bbEmpty = ^(bbToMove | bbOpponent)
@@ -151,21 +151,21 @@ func (bb *tBitBoard) getAllCandidateMoves() uint64 {
 	return candWest | candNorthEast | candNorth | candNorthWest | candEast | candSouthWest | candSouth | candSouthEast
 }
 
-func (bb *tBitBoard) doMove(move *tMove) {
+func (bb *bitBoard) doMove(move *move) {
 	bb.bitFields[bb.colorToMove] ^= move.discsFlipped | move.discPlayed
 	bb.colorToMove = 1 - bb.colorToMove
 	bb.bitFields[bb.colorToMove] ^= move.discsFlipped
 	bb.stack.Push(move)
 }
 
-func (bb *tBitBoard) takeBack() {
+func (bb *bitBoard) takeBack() {
 	move := bb.stack.Pop()
 	bb.bitFields[bb.colorToMove] ^= move.discsFlipped
 	bb.colorToMove = 1 - bb.colorToMove
 	bb.bitFields[bb.colorToMove] ^= move.discsFlipped | move.discPlayed
 }
 
-func (bb *tBitBoard) isEndOfGame() bool {
+func (bb *bitBoard) isEndOfGame() bool {
 	if ^(bb.bitFields[white] | bb.bitFields[black]) == 0 {
 		return true
 	}
@@ -196,7 +196,7 @@ func (bb *tBitBoard) isEndOfGame() bool {
 //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-func (bb *tBitBoard) perft(depth int) int64 {
+func (bb *bitBoard) perft(depth int) int64 {
 	if depth == 0 {
 		return 1
 	}
@@ -204,7 +204,7 @@ func (bb *tBitBoard) perft(depth int) int64 {
 		return 1
 	}
 	var nodeCount int64 = 0
-	moves := bb.GenerateMoves()
+	moves := bb.generateMoves()
 	for _, move := range moves {
 		bb.doMove(&move)
 		nodeCount += bb.perft(depth - 1)

@@ -1,6 +1,10 @@
 package board
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+	"time"
+)
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -41,5 +45,16 @@ func Test_tBitBoard_perft(t *testing.T) {
 		if nodeCount != table.n {
 			t.Errorf("Perft of %d was incorrect, got: %d, want: %d.", table.x, nodeCount, table.n)
 		}
+	}
+}
+
+func Test_bitBoard_perft_print(t *testing.T) {
+	var hb = InitStartBoard()
+
+	for i := 0; i < 12; i++ {
+		currentTime := time.Now()
+		result := hb.bitBoard.perft(i)
+		diff := time.Now().Sub(currentTime)
+		fmt.Printf("depth %3d  : %12.6f ms --> %14d\n", i, diff.Seconds(), result)
 	}
 }

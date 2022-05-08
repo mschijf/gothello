@@ -1,9 +1,9 @@
 package board
 
-type tMove struct {
+type move struct {
 	discsFlipped, discPlayed uint64
 }
 
-func (mv *tMove) isPass() bool {
+func (mv *move) isPass() bool {
 	return mv.discPlayed == 0
 }

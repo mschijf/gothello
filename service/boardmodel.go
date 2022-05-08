@@ -16,6 +16,8 @@ type BoardModel struct {
 	GameFinished     bool                                         `json:"gameFinished"`
 	MustPass         bool                                         `json:"mustPass"`
 	BoardString      string                                       `json:"boardString"`
+	WhiteCount       int                                          `json:"whiteCount"`
+	BlackCount       int                                          `json:"blackCount"`
 }
 
 func ToBoardModel(humanBoard *board.HumanBoard) BoardModel {
@@ -34,6 +36,7 @@ func ToBoardModel(humanBoard *board.HumanBoard) BoardModel {
 	bm.GameFinished = humanBoard.IsEndOfGame()
 	bm.MustPass = humanBoard.MustPass() && !humanBoard.IsEndOfGame()
 	bm.BoardString = humanBoard.ToBoardString()
+	bm.WhiteCount, bm.BlackCount = humanBoard.CountDiscs()
 	return bm
 }
 
