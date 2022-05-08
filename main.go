@@ -16,16 +16,20 @@
 
 package main
 
-import "gothello/controller"
+import (
+	"fmt"
+	"gothello/board"
+	"time"
+)
 
 func main() {
-	//var bb = board.InitStartBoard()
-	//
-	//for i := 0; i < 12; i++ {
-	//	currentTime := time.Now()
-	//	var result = bb.Perft(i)
-	//	diff := time.Now().Sub(currentTime)
-	//	fmt.Printf("depth %3d  : %12.6f ms --> %14d\n", i, diff.Seconds(), result)
-	//}
-	controller.RunController()
+	var bb = board.InitStartBoard()
+
+	for i := 0; i < 12; i++ {
+		currentTime := time.Now()
+		var result = bb.Perft(i)
+		diff := time.Now().Sub(currentTime)
+		fmt.Printf("depth %3d  : %12.6f ms --> %14d\n", i, diff.Seconds(), result)
+	}
+	//controller.RunController()
 }

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"gothello/bit64math"
+	"gothello/collection"
 	"strconv"
 	"strings"
 )
@@ -98,7 +99,7 @@ func (hb *HumanBoard) MustPass() bool {
 }
 
 func (hb *HumanBoard) HasHistory() bool {
-	return !hb.bitBoard.stack.isEmpty()
+	return !hb.bitBoard.stack.IsEmpty()
 }
 
 func (hb *HumanBoard) IsEndOfGame() bool {
@@ -130,10 +131,10 @@ func (hb *HumanBoard) ToBoardString() string {
 
 func (hb *HumanBoard) ToBoardStatusString() string {
 	var movesPlayedString = ""
-	var tmpStack MoveStack
-	for !hb.bitBoard.stack.isEmpty() {
-		move := hb.bitBoard.stack.fromTop(0)
-		tmpStack.push(move)
+	var tmpStack collection.Stack[tMove]
+	for !hb.bitBoard.stack.IsEmpty() {
+		move := hb.bitBoard.stack.FromTop(0)
+		tmpStack.Push(move)
 		if move.isPass() {
 			movesPlayedString = "xx" + movesPlayedString
 		} else {
@@ -145,8 +146,8 @@ func (hb *HumanBoard) ToBoardStatusString() string {
 
 	initialBoardString := hb.ToBoardString()
 
-	for !tmpStack.isEmpty() {
-		move := tmpStack.pop()
+	for !tmpStack.IsEmpty() {
+		move := tmpStack.Pop()
 		hb.bitBoard.doMove(move)
 	}
 

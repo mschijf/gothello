@@ -2,12 +2,13 @@ package board
 
 import (
 	"gothello/bit64math"
+	"gothello/collection"
 )
 
 type tBitBoard struct {
 	bitFields   [2]uint64
 	colorToMove int
-	stack       MoveStack
+	stack       collection.Stack[tMove]
 }
 
 const rightBorder uint64 = 0x01_01_01_01_01_01_01_01
@@ -154,11 +155,11 @@ func (bb *tBitBoard) doMove(move *tMove) {
 	bb.bitFields[bb.colorToMove] ^= move.discsFlipped | move.discPlayed
 	bb.colorToMove = 1 - bb.colorToMove
 	bb.bitFields[bb.colorToMove] ^= move.discsFlipped
-	bb.stack.push(move)
+	bb.stack.Push(move)
 }
 
 func (bb *tBitBoard) takeBack() {
-	move := bb.stack.pop()
+	move := bb.stack.Pop()
 	bb.bitFields[bb.colorToMove] ^= move.discsFlipped
 	bb.colorToMove = 1 - bb.colorToMove
 	bb.bitFields[bb.colorToMove] ^= move.discsFlipped | move.discPlayed
@@ -169,7 +170,7 @@ func (bb *tBitBoard) isEndOfGame() bool {
 		return true
 	}
 
-	return bb.stack.size() > 1 && bb.stack.fromTop(0).isPass() && bb.stack.fromTop(1).isPass()
+	return bb.stack.Size() > 1 && bb.stack.FromTop(0).isPass() && bb.stack.FromTop(1).isPass()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
