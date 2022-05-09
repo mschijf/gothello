@@ -132,6 +132,16 @@ func (hb *HumanBoard) CountDiscs() (whiteCount, blackCount int) {
 	return bit64math.BitCount(hb.bitBoard.bitFields[white]), bit64math.BitCount(hb.bitBoard.bitFields[black])
 }
 
+func (hb *HumanBoard) WhiteHasWon() bool {
+	whiteCount, blackCount := hb.CountDiscs()
+	return hb.IsEndOfGame() && whiteCount > blackCount
+}
+
+func (hb *HumanBoard) BlackHasWon() bool {
+	whiteCount, blackCount := hb.CountDiscs()
+	return hb.IsEndOfGame() && blackCount > whiteCount
+}
+
 func (hb *HumanBoard) ToBoardString() string {
 	return fmt.Sprintf("%d%s%d%s%d", hb.bitBoard.bitFields[0], delimiter, hb.bitBoard.bitFields[1], delimiter, hb.bitBoard.colorToMove)
 }

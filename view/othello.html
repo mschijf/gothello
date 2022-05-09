@@ -207,7 +207,7 @@
         showFields(board)
 //                 showLastFieldPlayed(board)
         showWhoIsToMove(board)
-//                 showWinner(board)
+        showWinner(board)
         showActionButtons(board)
 //                 showComputerResult(board.searchResult)
         showMiscellanious(board)
@@ -250,7 +250,12 @@
 
     function showWhoIsToMove(board) {
         var elem = document.getElementById("whoistomove");
-        elem.style.backgroundColor = toColor(board.colorToMove);
+        if (!board.gameFinished) {
+            elem.style.visibility = "visible";
+            elem.style.backgroundColor = toColor(board.colorToMove);
+        } else {
+            elem.style.visibility = "hidden";
+        }
     }
 
     function showActionButtons(board) {
@@ -262,13 +267,10 @@
     function showWinner(board) {
         var elem = document.getElementById("winner");
         if (board.gameFinished) {
+            elem.style.visibility = "visible";
             elem.style.backgroundColor = toColor(board.colorHasWon);
-            for (let i = 0; i < board.winningFields.length; i++) {
-                var fieldElem = document.getElementById(toFieldId(board.winningFields[i].col, board.winningFields[i].row));
-                fieldElem.innerText = "**"
-            }
         } else {
-            elem.style.backgroundColor = "white";
+            elem.style.visibility = "hidden";
         }
     }
 

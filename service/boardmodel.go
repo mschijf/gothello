@@ -1,6 +1,8 @@
 package service
 
-import "gothello/board"
+import (
+	"gothello/board"
+)
 
 type FieldModel struct {
 	Col      int    `json:"col"`
@@ -18,7 +20,12 @@ type BoardModel struct {
 	BoardString      string                                       `json:"boardString"`
 	WhiteCount       int                                          `json:"whiteCount"`
 	BlackCount       int                                          `json:"blackCount"`
+	ColorHasWon      string                                       `json:"colorHasWon"`
 }
+
+const whiteDiscColor = "white"
+const blackDiscColor = "black"
+const noneColor = "none"
 
 func ToBoardModel(humanBoard *board.HumanBoard) BoardModel {
 	var bm = BoardModel{}
@@ -28,26 +35,34 @@ func ToBoardModel(humanBoard *board.HumanBoard) BoardModel {
 		}
 	}
 	if humanBoard.IsBlackToMove() {
-		bm.ColorToMove = "black"
+		bm.ColorToMove = blackDiscColor
 	} else {
-		bm.ColorToMove = "white"
+		bm.ColorToMove = whiteDiscColor
 	}
 	bm.TakeBackPossible = humanBoard.HasHistory()
 	bm.GameFinished = humanBoard.IsEndOfGame()
 	bm.MustPass = humanBoard.MustPass() && !humanBoard.IsEndOfGame()
 	bm.BoardString = humanBoard.ToBoardString()
 	bm.WhiteCount, bm.BlackCount = humanBoard.CountDiscs()
+	switch {
+	case humanBoard.WhiteHasWon():
+		bm.ColorHasWon = whiteDiscColor
+	case humanBoard.BlackHasWon():
+		bm.ColorHasWon = blackDiscColor
+	default:
+		bm.ColorHasWon = noneColor
+	}
 	return bm
 }
 
 func getFieldModel(bb *board.HumanBoard, col, row int) FieldModel {
 	var discColor string
 	if bb.IsBlackDisc(col, row) {
-		discColor = "black"
+		discColor = blackDiscColor
 	} else if bb.IsWhiteDisc(col, row) {
-		discColor = "white"
+		discColor = whiteDiscColor
 	} else {
-		discColor = "NONE"
+		discColor = noneColor
 	}
 	return FieldModel{col, row, discColor, bb.IsPlayable(col, row)}
 }
