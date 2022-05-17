@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-//           bitBoard                               Human (0-based) bitFields
+//           BitBoard                               Human (0-based) bitFields
 //
 //  --- --- --- --- --- --- --- ---    RIJ --- --- --- --- --- --- --- ---
 // |63 |62 |61 |60 |59 |58 |57 |56 |     0|   |   |   |   |   |   |   |   |
@@ -30,7 +30,9 @@ import (
 //                                          0   1   2   3   4   5   6   7   KOLOM
 
 type HumanBoard struct {
-	bitBoard bitBoard
+	bitBoard    BitBoard
+	colorToMove int
+	stack       collection.Stack[Move]
 }
 
 const delimiter = ":"
@@ -52,7 +54,10 @@ func StringToBitBoard(boardString string) HumanBoard {
 	bbWhite, _ := strconv.ParseUint(boardStringParts[0], 10, 64)
 	bbBlack, _ := strconv.ParseUint(boardStringParts[1], 10, 64)
 	colorToMove, _ := strconv.Atoi(boardStringParts[2])
-	var humanBoard = HumanBoard{initBoard(bbWhite, bbBlack, colorToMove)}
+
+	var humanBoard HumanBoard
+	humanBoard.bitBoard = InitBoard(bbWhite, bbBlack)
+	humanBoard.colorToMove = colorToMove
 
 	if len(boardStringParts) == 4 {
 		var moveList = boardStringParts[3]
@@ -74,11 +79,15 @@ func InitStartBoard() HumanBoard {
 	var bbWhite = colRowToBit(start-1, start-1) | colRowToBit(start, start) //0x00_00_00_10_08_00_00_00
 	var bbBlack = colRowToBit(start-1, start) | colRowToBit(start, start-1) //0x00_00_00_08_10_00_00_00
 	var colorToMove = black
-	return HumanBoard{initBoard(bbWhite, bbBlack, colorToMove)}
+
+	var humanBoard HumanBoard
+	humanBoard.bitBoard = InitBoard(bbWhite, bbBlack)
+	humanBoard.colorToMove = colorToMove
+	return humanBoard
 }
 
 func (hb *HumanBoard) IsBlackToMove() bool {
-	return hb.bitBoard.colorToMove == black
+	return hb.colorToMove == black
 }
 
 func (hb *HumanBoard) IsWhiteDisc(col, row int) bool {
@@ -90,30 +99,36 @@ func (hb *HumanBoard) IsBlackDisc(col, row int) bool {
 }
 
 func (hb *HumanBoard) IsPlayable(col, row int) bool {
-	return colRowToBit(col, row)&hb.bitBoard.getAllCandidateMoves() != 0
+	return colRowToBit(col, row)&hb.bitBoard.getAllCandidateMoves(hb.colorToMove) != 0
 }
 
 func (hb *HumanBoard) MustPass() bool {
-	return hb.bitBoard.getAllCandidateMoves() == 0
+	return hb.bitBoard.getAllCandidateMoves(hb.colorToMove) == 0
 }
 
 func (hb *HumanBoard) HasHistory() bool {
-	return !hb.bitBoard.stack.IsEmpty()
+	return !hb.stack.IsEmpty()
 }
 
 func (hb *HumanBoard) IsEndOfGame() bool {
-	return hb.bitBoard.isEndOfGame()
+	if !hb.bitBoard.HasEmptyFields() {
+		return true
+	}
+
+	return hb.stack.Size() > 1 && hb.stack.FromTop(0).isPass() && hb.stack.FromTop(1).isPass()
 }
 
 func (hb *HumanBoard) doBitBoardMove(moveBit uint64) {
-	var moves = hb.bitBoard.generateMoves()
+	var moves = hb.bitBoard.GenerateMoves(hb.colorToMove)
 	for _, move := range moves {
 		if move.discPlayed == moveBit {
-			hb.bitBoard.doMove(&move)
+			hb.bitBoard.DoMove(&move, hb.colorToMove)
+			hb.colorToMove = 1 - hb.colorToMove
+			hb.stack.Push(&move)
 			return
 		}
 	}
-	panic("move from UI is not correct")
+	panic("Move from UI is not correct")
 }
 
 func (hb *HumanBoard) DoColRowMove(col, row int) {
@@ -125,7 +140,9 @@ func (hb *HumanBoard) DoPassMove() {
 }
 
 func (hb *HumanBoard) TakeBack() {
-	hb.bitBoard.takeBack()
+	move := hb.stack.Pop()
+	hb.bitBoard.UndoMove(move, hb.colorToMove)
+	hb.colorToMove = 1 - hb.colorToMove
 }
 
 func (hb *HumanBoard) CountDiscs() (whiteCount, blackCount int) {
@@ -143,14 +160,14 @@ func (hb *HumanBoard) BlackHasWon() bool {
 }
 
 func (hb *HumanBoard) ToBoardString() string {
-	return fmt.Sprintf("%d%s%d%s%d", hb.bitBoard.bitFields[0], delimiter, hb.bitBoard.bitFields[1], delimiter, hb.bitBoard.colorToMove)
+	return fmt.Sprintf("%d%s%d%s%d", hb.bitBoard.bitFields[0], delimiter, hb.bitBoard.bitFields[1], delimiter, hb.colorToMove)
 }
 
 func (hb *HumanBoard) ToBoardStatusString() string {
 	var movesPlayedString = ""
-	var tmpStack collection.Stack[move]
-	for !hb.bitBoard.stack.IsEmpty() {
-		move := hb.bitBoard.stack.FromTop(0)
+	var tmpStack collection.Stack[Move]
+	for !hb.stack.IsEmpty() {
+		move := hb.stack.Top()
 		tmpStack.Push(move)
 		if move.isPass() {
 			movesPlayedString = "xx" + movesPlayedString
@@ -158,14 +175,14 @@ func (hb *HumanBoard) ToBoardStatusString() string {
 			col, row := bitToColRow(move.discPlayed)
 			movesPlayedString = fmt.Sprintf("%d%d", col, row) + movesPlayedString
 		}
-		hb.bitBoard.takeBack()
+		hb.TakeBack()
 	}
 
 	initialBoardString := hb.ToBoardString()
 
 	for !tmpStack.IsEmpty() {
 		move := tmpStack.Pop()
-		hb.bitBoard.doMove(move)
+		hb.doBitBoardMove(move.discPlayed)
 	}
 
 	return initialBoardString + delimiter + movesPlayedString

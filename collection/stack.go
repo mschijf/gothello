@@ -1,28 +1,32 @@
 package collection
 
 type Stack[T any] struct {
-	stack [100]*T
-	size  int
+	stack []*T
 }
 
 func (thisStack *Stack[T]) Push(element *T) {
-	thisStack.stack[thisStack.size] = element
-	thisStack.size++
+	thisStack.stack = append(thisStack.stack, element)
 }
 
 func (thisStack *Stack[T]) Pop() *T {
-	thisStack.size--
-	return thisStack.stack[thisStack.size]
+	n := len(thisStack.stack) - 1 // Top element
+	element := thisStack.stack[n]
+	thisStack.stack = thisStack.stack[:n]
+	return element
 }
 
 func (thisStack *Stack[T]) IsEmpty() bool {
-	return thisStack.size <= 0
+	return len(thisStack.stack) == 0
+}
+
+func (thisStack *Stack[T]) Top() *T {
+	return thisStack.FromTop(0)
 }
 
 func (thisStack *Stack[T]) FromTop(i int) *T {
-	return thisStack.stack[thisStack.size-i-1]
+	return thisStack.stack[len(thisStack.stack)-i-1]
 }
 
 func (thisStack *Stack[T]) Size() int {
-	return thisStack.size
+	return len(thisStack.stack)
 }

@@ -41,7 +41,7 @@ func Test_tBitBoard_perft(t *testing.T) {
 	}
 
 	for _, table := range tables {
-		nodeCount := hb.bitBoard.perft(table.x)
+		nodeCount := hb.bitBoard.perft(table.x, black, false)
 		if nodeCount != table.n {
 			t.Errorf("Perft of %d was incorrect, got: %d, want: %d.", table.x, nodeCount, table.n)
 		}
@@ -51,9 +51,9 @@ func Test_tBitBoard_perft(t *testing.T) {
 func Test_bitBoard_perft_print(t *testing.T) {
 	var hb = InitStartBoard()
 
-	for i := 0; i < 12; i++ {
+	for i := 0; i < 14; i++ {
 		currentTime := time.Now()
-		result := hb.bitBoard.perft(i)
+		result := hb.bitBoard.perft(i, black, false)
 		diff := time.Now().Sub(currentTime)
 		fmt.Printf("depth %3d  : %12.6f ms --> %14d\n", i, diff.Seconds(), result)
 	}
