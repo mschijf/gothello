@@ -55,9 +55,7 @@ func StringToBitBoard(boardString string) HumanBoard {
 	bbBlack, _ := strconv.ParseUint(boardStringParts[1], 10, 64)
 	colorToMove, _ := strconv.Atoi(boardStringParts[2])
 
-	var humanBoard HumanBoard
-	humanBoard.bitBoard = InitBoard(bbWhite, bbBlack)
-	humanBoard.colorToMove = colorToMove
+	humanBoard := HumanBoard{bitBoard: InitBoard(bbWhite, bbBlack), colorToMove: colorToMove}
 
 	if len(boardStringParts) == 4 {
 		var moveList = boardStringParts[3]
@@ -78,12 +76,7 @@ func InitStartBoard() HumanBoard {
 	var start = BoardSize / 2
 	var bbWhite = colRowToBit(start-1, start-1) | colRowToBit(start, start) //0x00_00_00_10_08_00_00_00
 	var bbBlack = colRowToBit(start-1, start) | colRowToBit(start, start-1) //0x00_00_00_08_10_00_00_00
-	var colorToMove = black
-
-	var humanBoard HumanBoard
-	humanBoard.bitBoard = InitBoard(bbWhite, bbBlack)
-	humanBoard.colorToMove = colorToMove
-	return humanBoard
+	return HumanBoard{bitBoard: InitBoard(bbWhite, bbBlack), colorToMove: black}
 }
 
 func (hb *HumanBoard) IsBlackToMove() bool {
@@ -91,11 +84,11 @@ func (hb *HumanBoard) IsBlackToMove() bool {
 }
 
 func (hb *HumanBoard) IsWhiteDisc(col, row int) bool {
-	return colRowToBit(col, row)&hb.bitBoard.bitFields[white] != 0
+	return colRowToBit(col, row)&hb.bitBoard[white] != 0
 }
 
 func (hb *HumanBoard) IsBlackDisc(col, row int) bool {
-	return colRowToBit(col, row)&hb.bitBoard.bitFields[black] != 0
+	return colRowToBit(col, row)&hb.bitBoard[black] != 0
 }
 
 func (hb *HumanBoard) IsPlayable(col, row int) bool {
@@ -111,7 +104,7 @@ func (hb *HumanBoard) HasHistory() bool {
 }
 
 func (hb *HumanBoard) IsEndOfGame() bool {
-	if !hb.bitBoard.HasEmptyFields() {
+	if hb.bitBoard.AllFieldsPlayed() {
 		return true
 	}
 
@@ -146,7 +139,7 @@ func (hb *HumanBoard) TakeBack() {
 }
 
 func (hb *HumanBoard) CountDiscs() (whiteCount, blackCount int) {
-	return bit64math.BitCount(hb.bitBoard.bitFields[white]), bit64math.BitCount(hb.bitBoard.bitFields[black])
+	return bit64math.BitCount(hb.bitBoard[white]), bit64math.BitCount(hb.bitBoard[black])
 }
 
 func (hb *HumanBoard) WhiteHasWon() bool {
@@ -160,7 +153,7 @@ func (hb *HumanBoard) BlackHasWon() bool {
 }
 
 func (hb *HumanBoard) ToBoardString() string {
-	return fmt.Sprintf("%d%s%d%s%d", hb.bitBoard.bitFields[0], delimiter, hb.bitBoard.bitFields[1], delimiter, hb.colorToMove)
+	return fmt.Sprintf("%d%s%d%s%d", hb.bitBoard[0], delimiter, hb.bitBoard[1], delimiter, hb.colorToMove)
 }
 
 func (hb *HumanBoard) ToBoardStatusString() string {

@@ -4,9 +4,7 @@ import (
 	"gothello/bit64math"
 )
 
-type BitBoard struct {
-	bitFields [2]uint64
-}
+type BitBoard [2]uint64
 
 const rightBorder uint64 = 0x01_01_01_01_01_01_01_01
 const leftBorder uint64 = 0x80_80_80_80_80_80_80_80
@@ -25,10 +23,7 @@ const white = 0
 const black = 1
 
 func InitBoard(bbWhite, bbBlack uint64) BitBoard {
-	var board = BitBoard{}
-	board.bitFields[white] = bbWhite
-	board.bitFields[black] = bbBlack
-	return board
+	return BitBoard{bbWhite, bbBlack}
 }
 
 func getLeftHittingCandidate(direction int, bbToMove, bbCapturable, bbEmpty uint64) uint64 {
@@ -73,12 +68,12 @@ func getRightCapture(direction int, bbOpponent, bbMove uint64) uint64 {
 	return allCaptures
 }
 
-func (bb *BitBoard) GeneratePositions(colorToMove int) []BitBoard {
+func (bitBoard *BitBoard) GeneratePositions(colorToMove int) []BitBoard {
 	var resultList []BitBoard
 
 	var opponentColor = 1 - colorToMove
-	var bbToMove = bb.bitFields[colorToMove]
-	var bbOpponent = bb.bitFields[opponentColor]
+	var bbToMove = bitBoard[colorToMove]
+	var bbOpponent = bitBoard[opponentColor]
 	var bbEmpty = ^(bbToMove | bbOpponent)
 	var bbWithoutLeftRightBorder = bbOpponent & verticalMiddle
 
@@ -125,18 +120,18 @@ func (bb *BitBoard) GeneratePositions(colorToMove int) []BitBoard {
 		bitFields[colorToMove] = bbToMove ^ (allCaptures | bbMove)
 		bitFields[opponentColor] = bbOpponent ^ allCaptures
 
-		resultList = append(resultList, BitBoard{bitFields})
+		resultList = append(resultList, bitFields)
 		candAll ^= bbMove
 	}
 	return resultList
 }
 
-func (bb *BitBoard) GenerateMoves(colorToMove int) []Move {
+func (bitBoard *BitBoard) GenerateMoves(colorToMove int) []Move {
 	var resultList []Move
 
 	var opponentColor = 1 - colorToMove
-	var bbToMove = bb.bitFields[colorToMove]
-	var bbOpponent = bb.bitFields[opponentColor]
+	var bbToMove = bitBoard[colorToMove]
+	var bbOpponent = bitBoard[opponentColor]
 	var bbEmpty = ^(bbToMove | bbOpponent)
 	var bbWithoutLeftRightBorder = bbOpponent & verticalMiddle
 
@@ -185,9 +180,9 @@ func (bb *BitBoard) GenerateMoves(colorToMove int) []Move {
 	return resultList
 }
 
-func (bb *BitBoard) getAllCandidateMoves(colorToMove int) uint64 {
-	var bbToMove = bb.bitFields[colorToMove]
-	var bbOpponent = bb.bitFields[1-colorToMove]
+func (bitBoard *BitBoard) getAllCandidateMoves(colorToMove int) uint64 {
+	var bbToMove = bitBoard[colorToMove]
+	var bbOpponent = bitBoard[1-colorToMove]
 	var bbEmpty = ^(bbToMove | bbOpponent)
 	var bbWithoutLeftRightBorder = bbOpponent & verticalMiddle
 
@@ -202,18 +197,22 @@ func (bb *BitBoard) getAllCandidateMoves(colorToMove int) uint64 {
 	return candWest | candNorthEast | candNorth | candNorthWest | candEast | candSouthWest | candSouth | candSouthEast
 }
 
-func (bb *BitBoard) DoMove(move *Move, colorToMove int) {
-	bb.bitFields[colorToMove] ^= move.discsFlipped | move.discPlayed
-	bb.bitFields[1-colorToMove] ^= move.discsFlipped
+func (bitBoard *BitBoard) DoMove(move *Move, colorToMove int) {
+	bitBoard[colorToMove] ^= move.discsFlipped | move.discPlayed
+	bitBoard[1-colorToMove] ^= move.discsFlipped
 }
 
-func (bb *BitBoard) UndoMove(move *Move, colorToMove int) {
-	bb.bitFields[colorToMove] ^= move.discsFlipped
-	bb.bitFields[1-colorToMove] ^= move.discsFlipped | move.discPlayed
+func (bitBoard *BitBoard) UndoMove(move *Move, colorToMove int) {
+	bitBoard[colorToMove] ^= move.discsFlipped
+	bitBoard[1-colorToMove] ^= move.discsFlipped | move.discPlayed
 }
 
-func (bb *BitBoard) HasEmptyFields() bool {
-	return ^(bb.bitFields[white] | bb.bitFields[black]) != 0
+func (bitBoard *BitBoard) AllFieldsPlayed() bool {
+	return ^(bitBoard[white] | bitBoard[black]) == 0
+}
+
+func (bitBoard *BitBoard) ColorHasWon(color int) bool {
+	return bit64math.BitCount(bitBoard[color]) > bit64math.BitCount(bitBoard[1-color])
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -239,20 +238,20 @@ func (bb *BitBoard) HasEmptyFields() bool {
 //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-func (bb *BitBoard) perft(depth int, colorToMove int, justPassed bool) int64 {
+func (bitBoard *BitBoard) perft(depth int, colorToMove int, justPassed bool) int64 {
 	if depth == 0 {
 		return 1
 	}
-	if !bb.HasEmptyFields() {
+	if bitBoard.AllFieldsPlayed() {
 		return 1
 	}
 	var nodeCount int64 = 0
-	positionList := bb.GeneratePositions(colorToMove)
+	positionList := bitBoard.GeneratePositions(colorToMove)
 	if len(positionList) == 0 {
 		if justPassed {
 			return 1
 		} else {
-			return bb.perft(depth-1, 1-colorToMove, true)
+			return bitBoard.perft(depth-1, 1-colorToMove, true)
 		}
 	} else {
 		for _, newPosition := range positionList {
