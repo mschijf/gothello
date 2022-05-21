@@ -81,6 +81,13 @@ func computeMove(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, result)
 }
 
+// @Router       /api/v1/compute/info/ [get]
+func getComputeInfo(c *gin.Context) {
+	cookie := getStatusCookie(c)
+	result := service.GetComputeInfo(cookie)
+	c.IndentedJSON(http.StatusOK, result)
+}
+
 // @Router       / [get]
 func getHtml(c *gin.Context) {
 	html, err := os.ReadFile("./view/othello.html")
@@ -112,6 +119,7 @@ func setHandlers(router *gin.Engine) {
 	router.POST("/api/v1/move/passmove/", doPassMove)
 	router.POST("/api/v1/move/takeback/", takeBackLastMove)
 	router.POST("/api/v1/move/compute/:searchDepth", computeMove)
+	router.GET("/api/v1/compute/info/", getComputeInfo)
 }
 
 func startRouter(router *gin.Engine) {

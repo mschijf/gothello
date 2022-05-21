@@ -1,6 +1,7 @@
 package search
 
 import (
+	"fmt"
 	"gothello/board"
 	"gothello/math/intmath"
 	"math"
@@ -14,8 +15,10 @@ type Node struct {
 	bitBoard  board.BitBoard
 }
 
-const MaxNodesInTree = 25_000_000
+const MaxNodesInTree = 100_000_000
 const Infinite = 999_999_999
+
+var GlobalString = ""
 
 func initPnDpn(position board.BitBoard, endPosition bool, maxNodeColor int) (pn int, dpn int) {
 	if !endPosition {
@@ -102,6 +105,9 @@ func PnSearch(bitBoard board.BitBoard, colorToMove int) board.Move {
 	nodeCount := 1
 	root := Node{pn: 1, dpn: 1, isMaxNode: true, parent: nil, childList: nil, bitBoard: bitBoard}
 	for root.pn != 0 && root.dpn != 0 && nodeCount < MaxNodesInTree {
+		if nodeCount%1_000_000 == 0 {
+			GlobalString = fmt.Sprintf("(pn, dpn) = (%d,%d). Nodes visited: %d\n", root.pn, root.dpn, nodeCount)
+		}
 		mpn := root.findMostProvingNode()
 		if mpn.isMaxNode {
 			mpn.expand(colorToMove, colorToMove)
@@ -111,6 +117,7 @@ func PnSearch(bitBoard board.BitBoard, colorToMove int) board.Move {
 		nodeCount += len(mpn.childList)
 		mpn.updateTree()
 	}
+	GlobalString = fmt.Sprintf("(pn, dpn) = (%d,%d). Nodes visited: %d\n", root.pn, root.dpn, nodeCount)
 	return root.suggestedMove()
 }
 

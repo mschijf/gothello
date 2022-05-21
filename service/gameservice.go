@@ -39,3 +39,8 @@ func ComputeMove(boardStatusString string) (BoardModel, string) {
 	currentBoard.DoColRowMove(col, row)
 	return ToBoardModel(&currentBoard), currentBoard.ToBoardStatusString()
 }
+
+func GetComputeInfo(boardStatusString string) string {
+	//currentBoard := board.StringToBitBoard(boardStatusString)
+	return search.GlobalString
+}

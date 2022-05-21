@@ -145,6 +145,8 @@
 </div>
 
 <script>
+    var currentBoard
+
     function toFieldId(col, row) {
         return "field" + col + "" + row
     }
@@ -185,14 +187,9 @@
         }
     }
 
-    function setElementColor(element, modelColor, playable) {
+    function setElementColor(element, modelColor) {
         var backgroundColor = toColor(modelColor)
-        var showCandidate = document.getElementById("showCandidateMoves").checked
-        if (playable && showCandidate) {
-            element.style.backgroundColor = "rgb(0, 115, 0)"
-        } else {
-            element.style.backgroundColor = backgroundColor
-        }
+        element.style.backgroundColor = backgroundColor
         if (backgroundColor === "white") {
             element.style.color = "red"
         } else if (backgroundColor === "black") {
@@ -203,13 +200,16 @@
     }
 
     function showBoard(board) {
+        currentBoard = board
+
         createBoard(board)
         showFields(board)
-//                 showLastFieldPlayed(board)
+        setPlayableFields(board, true)
+        // showLastFieldPlayed(board)
         showWhoIsToMove(board)
         showWinner(board)
         showActionButtons(board)
-//                 showComputerResult(board.searchResult)
+        // showComputerResult(board.searchResult)
         showMiscellanious(board)
     }
 
@@ -217,10 +217,27 @@
         for (let row = 0; row < board.fields.length; row++) {
             for (let col = 0; col < board.fields[row].length; col++) {
                 var elem = document.getElementById(toFieldId(col, row));
-                setElementColor(elem, board.fields[row][col].color, board.fields[row][col].playable)
+                setElementColor(elem, board.fields[row][col].color)
+            }
+        }
+    }
+
+    function setPlayableFields(board, visible) {
+        var showCandidate = document.getElementById("showCandidateMoves").checked
+        var backgroundColor = toColor("NONE")
+        for (let row = 0; row < board.fields.length; row++) {
+            for (let col = 0; col < board.fields[row].length; col++) {
+                var elem = document.getElementById(toFieldId(col, row));
                 if (board.fields[row][col].playable) {
-                    elem.style.cursor = "pointer"
-                    elem.style.pointerEvents = 'auto';
+                    if (visible && showCandidate) {
+                        elem.style.backgroundColor = "rgb(0, 115, 0)"
+                        elem.style.cursor = "pointer"
+                        elem.style.pointerEvents = 'auto';
+                    } else {
+                        elem.style.backgroundColor = backgroundColor
+                        elem.style.cursor = "default"
+                        elem.style.pointerEvents = 'none';
+                    }
                 } else {
                     elem.style.cursor = "default"
                     elem.style.pointerEvents = 'none';
@@ -246,6 +263,7 @@
         document.getElementById("buttonPassMove").disabled = true
         document.getElementById("buttonCompute").disabled = true
         document.getElementById("buttonTakeback").disabled = true
+        setPlayableFields(currentBoard, false)
     }
 
     function showWhoIsToMove(board) {
@@ -306,7 +324,7 @@
     }
 
     function showComputeStatusInfo(info) {
-        document.getElementById("loggingInfo").innerText = info.statusLine
+        document.getElementById("loggingInfo").innerText = info
     }
 </script>
 
@@ -372,6 +390,10 @@
             if(this.readyState === 4 && this.status === 200) {
                 var board = JSON.parse(this.responseText);
                 showBoard(board);
+                var useComputer = document.getElementById("useComputerPlayer").checked
+                if (!board.gameFinished && useComputer) {
+                    computeMove()
+                }
             }
         };
         request.send();
@@ -385,25 +407,25 @@
             if(this.readyState === 4 && this.status === 200) {
                 var board = JSON.parse(this.responseText);
                 showBoard(board);
-                // getComputeStatusInfo()
+                getComputeStatusInfo()
             }
         };
         request.send();
     }
 
-    //             function getComputeStatusInfo() {
-    //                 var request = new XMLHttpRequest();
-    //
-    //                 request.open("GET", "api/v1/compute/info/");
-    //                 request.onreadystatechange = function() {
-    //                     if(this.readyState === 4 && this.status === 200) {
-    //                         var info = JSON.parse(this.responseText);
-    //                         showComputeStatusInfo(info);
-    //                     }
-    //                 };
-    //                 request.send();
-    //             }
-    //             const myInterval = setInterval(getComputeStatusInfo, 1000);
+    function getComputeStatusInfo() {
+        var request = new XMLHttpRequest();
+
+        request.open("GET", "api/v1/compute/info/");
+        request.onreadystatechange = function() {
+            if(this.readyState === 4 && this.status === 200) {
+                var info = JSON.parse(this.responseText);
+                showComputeStatusInfo(info);
+            }
+        };
+        request.send();
+    }
+    const myInterval = setInterval(getComputeStatusInfo, 1000);
 
 </script>
 </body>
