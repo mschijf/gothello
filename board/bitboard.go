@@ -1,7 +1,7 @@
 package board
 
 import (
-	"gothello/bit64math"
+	"gothello/math/bit64math"
 )
 
 type BitBoard [2]uint64
@@ -200,14 +200,14 @@ func (bitBoard *BitBoard) getAllCandidateMoves(colorToMove int) uint64 {
 	return candWest | candNorthEast | candNorth | candNorthWest | candEast | candSouthWest | candSouth | candSouthEast
 }
 
-func (bitBoard *BitBoard) DoMove(move *Move, colorToMove int) {
-	bitBoard[colorToMove] ^= move.discsFlipped | move.discPlayed
-	bitBoard[1-colorToMove] ^= move.discsFlipped
+func (bitBoard *BitBoard) DoMove(move *Move, movingColor int) {
+	bitBoard[movingColor] ^= move.discsFlipped | move.discPlayed
+	bitBoard[1-movingColor] ^= move.discsFlipped
 }
 
-func (bitBoard *BitBoard) UndoMove(move *Move, colorToMove int) {
-	bitBoard[colorToMove] ^= move.discsFlipped
-	bitBoard[1-colorToMove] ^= move.discsFlipped | move.discPlayed
+func (bitBoard *BitBoard) UndoMove(move *Move, movingColor int) {
+	bitBoard[1-movingColor] ^= move.discsFlipped
+	bitBoard[movingColor] ^= move.discsFlipped | move.discPlayed
 }
 
 func (bitBoard *BitBoard) AllFieldsPlayed() bool {

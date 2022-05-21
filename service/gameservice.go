@@ -2,6 +2,7 @@ package service
 
 import (
 	"gothello/board"
+	"gothello/search"
 )
 
 func GetNewBoard() (BoardModel, string) {
@@ -29,5 +30,12 @@ func DoPassMove(boardStatusString string) (BoardModel, string) {
 func TakeBackLastMove(boardStatusString string) (BoardModel, string) {
 	currentBoard := board.StringToBitBoard(boardStatusString)
 	currentBoard.TakeBack()
+	return ToBoardModel(&currentBoard), currentBoard.ToBoardStatusString()
+}
+
+func ComputeMove(boardStatusString string) (BoardModel, string) {
+	currentBoard := board.StringToBitBoard(boardStatusString)
+	col, row := search.ComputeMove(currentBoard)
+	currentBoard.DoColRowMove(col, row)
 	return ToBoardModel(&currentBoard), currentBoard.ToBoardStatusString()
 }

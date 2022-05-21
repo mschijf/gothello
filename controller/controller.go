@@ -32,14 +32,14 @@ func getStatusCookie(c *gin.Context) string {
 	return statusCookie
 }
 
-// @Router       /v1/api/board [post]
+// @Router       /api/v1/board [post]
 func getNewBoard(c *gin.Context) {
 	result, statusString := service.GetNewBoard()
 	setBoardStringCookie(c, statusString)
 	c.IndentedJSON(http.StatusOK, result)
 }
 
-// @Router       /v1/api/board [get]
+// @Router       /api/v1/board [get]
 func getBoard(c *gin.Context) {
 	cookie := getStatusCookie(c)
 	result, statusString := service.GetBoard(cookie)
@@ -47,7 +47,7 @@ func getBoard(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, result)
 }
 
-// @Router       /v1/api/move/{column}/{row} [post]
+// @Router       /api/v1/move/{column}/{row} [post]
 func doMove(c *gin.Context) {
 	col, _ := strconv.Atoi(c.Param("column"))
 	row, _ := strconv.Atoi(c.Param("row"))
@@ -57,7 +57,7 @@ func doMove(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, result)
 }
 
-// @Router       /v1/api/move/passmove [post]
+// @Router       /api/v1/move/passmove [post]
 func doPassMove(c *gin.Context) {
 	cookie := getStatusCookie(c)
 	result, statusString := service.DoPassMove(cookie)
@@ -65,10 +65,18 @@ func doPassMove(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, result)
 }
 
-// @Router       /v1/api/move/takeback/ [post]
+// @Router       /api/v1/move/takeback/ [post]
 func takeBackLastMove(c *gin.Context) {
 	cookie := getStatusCookie(c)
 	result, statusString := service.TakeBackLastMove(cookie)
+	setBoardStringCookie(c, statusString)
+	c.IndentedJSON(http.StatusOK, result)
+}
+
+// @Router       /api/v1/move/compute/{searchDepth} [post]
+func computeMove(c *gin.Context) {
+	cookie := getStatusCookie(c)
+	result, statusString := service.ComputeMove(cookie)
 	setBoardStringCookie(c, statusString)
 	c.IndentedJSON(http.StatusOK, result)
 }
@@ -103,6 +111,7 @@ func setHandlers(router *gin.Engine) {
 	router.POST("/api/v1/move/:column/:row/", doMove)
 	router.POST("/api/v1/move/passmove/", doPassMove)
 	router.POST("/api/v1/move/takeback/", takeBackLastMove)
+	router.POST("/api/v1/move/compute/:searchDepth", computeMove)
 }
 
 func startRouter(router *gin.Engine) {

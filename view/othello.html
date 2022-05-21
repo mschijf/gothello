@@ -312,6 +312,31 @@
 
 
 <script>
+    function getBoard() {
+        var request = new XMLHttpRequest();
+
+        request.open("GET", "api/v1/board/");
+        request.onreadystatechange = function() {
+            if(this.readyState === 4 && this.status === 200) {
+                var board = JSON.parse(this.responseText);
+                showBoard(board);
+            }
+        };
+        request.send();
+    }
+
+    function newGame() {
+        var request = new XMLHttpRequest();
+        request.open("POST", "api/v1/board/");
+        request.onreadystatechange = function() {
+            if(this.readyState === 4 && this.status === 200) {
+                var board = JSON.parse(this.responseText);
+                showBoard(board);
+            }
+        };
+        request.send();
+    }
+
     function executeMove(columnNumber, rowNumber) {
         var request = new XMLHttpRequest();
         request.open("POST", "api/v1/move/" + columnNumber + "/" + rowNumber);
@@ -360,32 +385,7 @@
             if(this.readyState === 4 && this.status === 200) {
                 var board = JSON.parse(this.responseText);
                 showBoard(board);
-                getComputeStatusInfo()
-            }
-        };
-        request.send();
-    }
-
-    function getBoard() {
-        var request = new XMLHttpRequest();
-
-        request.open("GET", "api/v1/board/");
-        request.onreadystatechange = function() {
-            if(this.readyState === 4 && this.status === 200) {
-                var board = JSON.parse(this.responseText);
-                showBoard(board);
-            }
-        };
-        request.send();
-    }
-
-    function newGame() {
-        var request = new XMLHttpRequest();
-        request.open("POST", "api/v1/board/");
-        request.onreadystatechange = function() {
-            if(this.readyState === 4 && this.status === 200) {
-                var board = JSON.parse(this.responseText);
-                showBoard(board);
+                // getComputeStatusInfo()
             }
         };
         request.send();

@@ -2,8 +2,8 @@ package board
 
 import (
 	"fmt"
-	"gothello/bit64math"
 	"gothello/collection"
+	"gothello/math/bit64math"
 	"strconv"
 	"strings"
 )
@@ -134,8 +134,8 @@ func (hb *HumanBoard) DoPassMove() {
 
 func (hb *HumanBoard) TakeBack() {
 	move := hb.stack.Pop()
-	hb.bitBoard.UndoMove(move, hb.colorToMove)
 	hb.colorToMove = 1 - hb.colorToMove
+	hb.bitBoard.UndoMove(move, hb.colorToMove)
 }
 
 func (hb *HumanBoard) CountDiscs() (whiteCount, blackCount int) {
@@ -179,4 +179,12 @@ func (hb *HumanBoard) ToBoardStatusString() string {
 	}
 
 	return initialBoardString + delimiter + movesPlayedString
+}
+
+func (hb *HumanBoard) GetBitBoard() BitBoard {
+	return hb.bitBoard
+}
+
+func (hb *HumanBoard) GetColorToMove() int {
+	return hb.colorToMove
 }
