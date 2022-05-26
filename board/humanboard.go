@@ -92,11 +92,11 @@ func (hb *HumanBoard) IsBlackDisc(col, row int) bool {
 }
 
 func (hb *HumanBoard) IsPlayable(col, row int) bool {
-	return colRowToBit(col, row)&hb.bitBoard.getAllCandidateMoves(hb.colorToMove) != 0
+	return colRowToBit(col, row)&hb.bitBoard.GetAllCandidateMoves(hb.colorToMove) != 0
 }
 
 func (hb *HumanBoard) MustPass() bool {
-	return hb.bitBoard.getAllCandidateMoves(hb.colorToMove) == 0
+	return hb.bitBoard.GetAllCandidateMoves(hb.colorToMove) == 0
 }
 
 func (hb *HumanBoard) HasHistory() bool {

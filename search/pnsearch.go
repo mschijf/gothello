@@ -15,10 +15,11 @@ type Node struct {
 	bitBoard  board.BitBoard
 }
 
-const MaxNodesInTree = 100_000_000
+const MaxNodesInTree = 300_000_000
 const Infinite = 999_999_999
 
 var GlobalString = ""
+var transpositions map[board.BitBoard]int
 
 func initPnDpn(position board.BitBoard, endPosition bool, maxNodeColor int) (pn int, dpn int) {
 	if !endPosition {
@@ -42,6 +43,7 @@ func (thisNode *Node) expand(colorToMove int, maxNodeColor int) {
 	} else {
 		thisNode.childList = make([]*Node, len(newPositions), len(newPositions))
 		for index, newPosition := range newPositions {
+			//transpositions[newPosition] += 1
 			pn, dpn := initPnDpn(newPosition, newPosition.AllFieldsPlayed(), maxNodeColor)
 			thisNode.childList[index] = &Node{pn, dpn, !thisNode.isMaxNode, thisNode, nil, newPosition}
 		}
@@ -102,6 +104,7 @@ func (thisNode *Node) updateTree() {
 }
 
 func PnSearch(bitBoard board.BitBoard, colorToMove int) board.Move {
+	transpositions = make(map[board.BitBoard]int)
 	nodeCount := 1
 	root := Node{pn: 1, dpn: 1, isMaxNode: true, parent: nil, childList: nil, bitBoard: bitBoard}
 	for root.pn != 0 && root.dpn != 0 && nodeCount < MaxNodesInTree {
@@ -118,6 +121,15 @@ func PnSearch(bitBoard board.BitBoard, colorToMove int) board.Move {
 		mpn.updateTree()
 	}
 	GlobalString = fmt.Sprintf("(pn, dpn) = (%d,%d). Nodes visited: %d\n", root.pn, root.dpn, nodeCount)
+
+	countTranspositions := 0
+	for _, value := range transpositions {
+		if value > 1 {
+			countTranspositions++
+		}
+	}
+	GlobalString += fmt.Sprintf("\n\nNumber of transpositions : %d\n", countTranspositions)
+	fmt.Printf("\n\nNumber of transpositions : %d\n", countTranspositions)
 	return root.suggestedMove()
 }
 

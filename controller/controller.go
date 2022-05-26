@@ -123,6 +123,7 @@ func setHandlers(router *gin.Engine) {
 }
 
 func startRouter(router *gin.Engine) {
+
 	err := router.Run(address + ":" + port)
 	if err != nil {
 		panic(err)
@@ -130,6 +131,7 @@ func startRouter(router *gin.Engine) {
 }
 
 func RunController() {
+	gin.SetMode(gin.ReleaseMode)
 	var router = getRouter()
 	setHandlers(router)
 	startRouter(router)

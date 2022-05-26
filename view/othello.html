@@ -260,6 +260,7 @@
     }
 
     function disableAllButtons() {
+        document.getElementById("buttonNew").disabled = true
         document.getElementById("buttonPassMove").disabled = true
         document.getElementById("buttonCompute").disabled = true
         document.getElementById("buttonTakeback").disabled = true
@@ -277,6 +278,7 @@
     }
 
     function showActionButtons(board) {
+        document.getElementById("buttonNew").disabled = false
         document.getElementById("buttonPassMove").disabled = !board.mustPass
         document.getElementById("buttonCompute").disabled = board.gameFinished
         document.getElementById("buttonTakeback").disabled = !board.takeBackPossible
@@ -425,7 +427,7 @@
         };
         request.send();
     }
-    const myInterval = setInterval(getComputeStatusInfo, 1000);
+   const myInterval = setInterval(getComputeStatusInfo, 1000);
 
 </script>
 </body>
