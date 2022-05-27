@@ -110,6 +110,11 @@ func PnSearch(bitBoard board.BitBoard, colorToMove int) board.Move {
 	for root.pn != 0 && root.dpn != 0 && nodeCount < MaxNodesInTree {
 		if nodeCount%1_000_000 == 0 {
 			GlobalString = fmt.Sprintf("(pn, dpn) = (%d,%d). Nodes visited: %d\n", root.pn, root.dpn, nodeCount)
+			for _, child := range root.childList {
+				childMove := board.MoveBetween(root.bitBoard, child.bitBoard)
+				var col, row = childMove.ToColRow()
+				GlobalString += fmt.Sprintf("   %c%c: (pn, dpn) = (%d,%d) \n", 'A'+col, '1'+row, child.pn, child.dpn)
+			}
 		}
 		mpn := root.findMostProvingNode()
 		if mpn.isMaxNode {
@@ -121,15 +126,20 @@ func PnSearch(bitBoard board.BitBoard, colorToMove int) board.Move {
 		mpn.updateTree()
 	}
 	GlobalString = fmt.Sprintf("(pn, dpn) = (%d,%d). Nodes visited: %d\n", root.pn, root.dpn, nodeCount)
-
-	countTranspositions := 0
-	for _, value := range transpositions {
-		if value > 1 {
-			countTranspositions++
-		}
+	for _, child := range root.childList {
+		childMove := board.MoveBetween(root.bitBoard, child.bitBoard)
+		var col, row = childMove.ToColRow()
+		GlobalString += fmt.Sprintf("   %c%c: (pn, dpn) = (%d,%d) \n", 'A'+col, '1'+row, child.pn, child.dpn)
 	}
-	GlobalString += fmt.Sprintf("\n\nNumber of transpositions : %d\n", countTranspositions)
-	fmt.Printf("\n\nNumber of transpositions : %d\n", countTranspositions)
+	//
+	//countTranspositions := 0
+	//for _, value := range transpositions {
+	//	if value > 1 {
+	//		countTranspositions++
+	//	}
+	//}
+	//GlobalString += fmt.Sprintf("\n\nNumber of transpositions : %d\n", countTranspositions)
+	//fmt.Printf("\n\nNumber of transpositions : %d\n", countTranspositions)
 	return root.suggestedMove()
 }
 

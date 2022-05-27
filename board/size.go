@@ -1,6 +1,6 @@
 package board
 
-const BoardSize = 4
+const BoardSize = 6
 
 func init() {
 	if BoardSize%2 != 0 {

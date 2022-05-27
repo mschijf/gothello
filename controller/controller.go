@@ -100,7 +100,7 @@ func getHtml(c *gin.Context) {
 //----------------------------------------------------------------------------------------------------------------------
 
 func getRouter() *gin.Engine {
-	var router = gin.Default()
+	var router = gin.New()
 	err := router.SetTrustedProxies(nil)
 	if err != nil {
 		panic(err)
@@ -131,7 +131,6 @@ func startRouter(router *gin.Engine) {
 }
 
 func RunController() {
-	gin.SetMode(gin.ReleaseMode)
 	var router = getRouter()
 	setHandlers(router)
 	startRouter(router)
