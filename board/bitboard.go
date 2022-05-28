@@ -246,3 +246,10 @@ func (bitBoard *BitBoard) AllFieldsPlayed() bool {
 func (bitBoard *BitBoard) ColorHasWon(color int) bool {
 	return bit64math.BitCount(bitBoard[color]) > bit64math.BitCount(bitBoard[1-color])
 }
+
+func Lala() int {
+	if true {
+		return 4
+	}
+	return 5
+}
